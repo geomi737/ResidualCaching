@@ -1,3 +1,6 @@
+# Based on nanoGPT, Copyright (c) 2022 Andrej Karpathy (MIT; see LICENSE in this directory).
+# Modified for ResidualCaching, Copyright (c) 2026 geomi737.
+# Project modifications: Apache-2.0; see ../LICENSE, ../NOTICE, and ../UPSTREAM.md.
 """
 This training script can be run both on a single gpu in debug mode,
 and also in a larger training run with distributed data parallel (ddp).

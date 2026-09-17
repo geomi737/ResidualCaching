@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "Please cite this repository when discussing or building on this experiment."
+title: "ResidualCaching: Causal Token Merging with Residual Caching"
+type: software
+authors:
+  - name: "geomi737"
+repository-code: "https://github.com/geomi737/ResidualCaching"
+url: "https://github.com/geomi737/ResidualCaching"
+abstract: "Research beta exploring one-way causal token merging and residual-sum aggregation, built on nanoGPT. Development assisted by Gemini and ChatGPT/Codex."

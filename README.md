@@ -1,5 +1,11 @@
 # ResidualCaching
 
+**Research beta · Fully AI-assisted / vibe-coded project · Experiments ongoing**
+
+This is an early research beta, not a production-ready optimization library. The project-specific implementation and documentation were developed through a fully AI-assisted, "vibe-coded" workflow with Gemini and ChatGPT/Codex under geomi737's direction, on top of Andrej Karpathy's independently authored nanoGPT. Tests and reported experiments provide bounded evidence; they are not a comprehensive independent audit.
+
+The author is publishing early to document the idea's provenance and reduce the risk of it being presented without attribution. This records this project's development, not a verified global priority claim. **The experiment will continue**: implementation, measurements, and conclusions may change. See the [research roadmap](docs/roadmap.md).
+
 **Causal Token Merging with Residual Caching** is an experimental, one-way context compression architecture for autoregressive language models, built on [Andrej Karpathy's nanoGPT](https://github.com/karpathy/nanoGPT).
 
 The idea: process tokens at full resolution in the first few Transformer blocks, merge completed windows, and let deeper blocks operate on fewer positions. Add the sum of the original contextual token vectors as a residual path. Predict directly from the compressed sequence: **no unmerging**.
@@ -93,3 +99,9 @@ All **12 correctness/workflow tests pass with GPU access**, including float32 an
 ## Acknowledgments and upstream license
 
 Respect and thanks to **Andrej Karpathy** for nanoGPT and for making Transformer implementations approachable, readable, and easy to experiment with. This project builds on his implementation; the original README and [MIT license](nanoGPT/LICENSE) are preserved. See [UPSTREAM.md](UPSTREAM.md) for the exact source revision and [AUTHORS.md](AUTHORS.md) for human and AI assistance credits.
+
+## License and attribution
+
+Project-specific contributions are licensed under [Apache License 2.0](LICENSE). Retain applicable copyright, license, and attribution notices when redistributing this code or derivatives, including the notices in [NOTICE](NOTICE). Modified files must identify changes as required by the license. The original nanoGPT material remains under its [MIT license](nanoGPT/LICENSE); its notices must also be preserved. See [licensing scope](UPSTREAM.md#licensing).
+
+Please cite this repository when discussing or building on the experiment; [CITATION.cff](CITATION.cff) provides citation metadata. This citation request does not add conditions to Apache-2.0. The license does not require a public acknowledgment for every private use and does not give exclusive ownership of the underlying mathematical idea.

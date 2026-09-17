@@ -1,3 +1,6 @@
+# Based on nanoGPT, Copyright (c) 2022 Andrej Karpathy (MIT; see LICENSE in this directory).
+# Modified for ResidualCaching, Copyright (c) 2026 geomi737.
+# Project modifications: Apache-2.0; see ../LICENSE, ../NOTICE, and ../UPSTREAM.md.
 """
 Full definition of a GPT Language Model, all of it in this single file.
 References:

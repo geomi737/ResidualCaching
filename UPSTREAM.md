@@ -8,4 +8,6 @@ Project changes primarily affect `model.py`, `train.py`, `sample.py`, and `bench
 
 ## Licensing
 
-The upstream nanoGPT code is MIT licensed, copyright (c) 2022 Andrej Karpathy. Its complete notice is preserved at [nanoGPT/LICENSE](nanoGPT/LICENSE). This release does not introduce a separate license grant for the project's original contributions.
+The upstream nanoGPT code is MIT licensed, copyright (c) 2022 Andrej Karpathy. Its complete notice is preserved at [nanoGPT/LICENSE](nanoGPT/LICENSE). Project-specific original contributions and modifications are licensed under the root [Apache License 2.0](LICENSE), copyright (c) 2026 geomi737, to the extent copyright applies. Upstream material is not relicensed: its MIT terms and notices remain applicable. Redistribution of the combined project must preserve both applicable sets of notices. [NOTICE](NOTICE) records attribution.
+
+Modified upstream files are `nanoGPT/model.py`, `nanoGPT/train.py`, and `nanoGPT/sample.py`; their headers identify project modifications. New project files (including the benchmark, residual configuration, experiments, tests, and project documentation) use Apache-2.0 unless explicitly identified otherwise. Unmodified upstream files, notebooks, and assets retain their original licensing. AI assistance and authorship provenance are described in [AUTHORS.md](AUTHORS.md); no claim is made to exclusive rights in ideas or otherwise unprotectable material.
