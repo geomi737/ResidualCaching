@@ -1,5 +1,5 @@
 """
-Merged Token Transformer — тестируем идею мердж-токенов + residual cache
+Merged Token Transformer: exploratory token merging and residual aggregation
 
 Historical non-causal classification prototype. The supported causal language
 model is nanoGPT/model.py; see the project README for the current architecture.
@@ -36,7 +36,7 @@ class MultiHeadAttention(nn.Module):
 
     def forward(self, x):
         B, L, D = x.shape
-        # Переходим к форме (B, n_heads, L, d_k) для внимания между токенами L
+        # Reshape to (B, n_heads, L, d_k) for attention across L tokens
         Q = self.W_q(x).view(B, L, self.n_heads, self.d_k).transpose(1, 2)
         K = self.W_k(x).view(B, L, self.n_heads, self.d_k).transpose(1, 2)
         V = self.W_v(x).view(B, L, self.n_heads, self.d_k).transpose(1, 2)
@@ -64,7 +64,7 @@ class FeedForward(nn.Module):
 
 
 # ============================================================================
-# 2. Token Merger — объединяем N токенов в 1 + сумма участвовавших эмбеддингов
+# 2. Token Merger: combine N tokens into one and retain their sum
 # ============================================================================
 
 class TokenMerger(nn.Module):
@@ -76,7 +76,7 @@ class TokenMerger(nn.Module):
 
     def forward(self, x):
         B, L, D = x.shape
-        assert L % self.merge_ratio == 0, f"Длина последовательности {L} должна делиться на {self.merge_ratio}"
+        assert L % self.merge_ratio == 0, f"Sequence length {L} must be divisible by {self.merge_ratio}"
         num_groups = L // self.merge_ratio
         groups, merged_tokens, group_sums = [], [], []
 
@@ -91,7 +91,7 @@ class TokenMerger(nn.Module):
             merged = torch.sum(group_tokens * weights, dim=1)  # (B, D)
             merged_tokens.append(merged)
 
-            # Идея: вместо хранения всех N эмбеддингов сохраняем сумму всех участвовавших
+            # Keep the sum of constituent embeddings instead of all N individual vectors
             # merged + 1residual + 2residual = merged + (1residual + 2residual)
             group_sum = torch.sum(group_tokens, dim=1)  # (B, D)
             group_sums.append(group_sum)
@@ -101,14 +101,14 @@ class TokenMerger(nn.Module):
 
 
 # ============================================================================
-# 3. ResidualCache — храним суммы участвовавших эмбеддингов для residual
+# 3. ResidualCache: store constituent sums for the residual path
 # ============================================================================
 
 @dataclass
 class ResidualCache:
     """
-    Кэш суммированных residual-эмбеддингов.
-    Каждая запись: тензор (B, num_groups, D) — поэлементная сумма оригинальных токенов группы.
+    Cache of summed residual embeddings.
+    Each entry is a (B, num_groups, D) elementwise sum of the original group vectors.
     """
     entries: List[torch.Tensor] = field(default_factory=list)
 
@@ -153,8 +153,8 @@ class MergedTransformerBlock(nn.Module):
     """
     Pipeline:
       1. Attention + standard residual (Pre-LN)
-      2. Merge N→1 (если merge=True) + сохранение суммы оригиналов в ResidualCache
-      3. FFN + residual + sum(residuals из cache)
+      2. Merge N-to-1 when merge=True and store the constituent sum in ResidualCache
+      3. FFN + residual + sum of cached residuals
     """
 
     def __init__(self, d_model, n_heads, d_ff, merge_ratio=2, dropout=0.1):
@@ -183,14 +183,14 @@ class MergedTransformerBlock(nn.Module):
                 residual_cache.add(group_residuals)
             was_merged = True
 
-        # Step 3: FFN + residual с добавлением суммированных оригинальных эмбеддингов
+        # Step 3: FFN + residual plus the summed original embeddings
         ffn_out = self.ffn(self.norm2(x))
         residual = ffn_out
 
-        # Добавляем сумму участвовавших эмбеддингов из cache
+        # Add cached constituent sums
         if residual_cache and len(residual_cache) > 0:
             for res in residual_cache.entries:
-                # res shape: (B, new_L, D) — в точности совпадает с формой x и ffn_out
+                # res shape: (B, new_L, D), matching x and ffn_out
                 residual = residual + res
 
         x = x + self.dropout(residual)
@@ -198,7 +198,7 @@ class MergedTransformerBlock(nn.Module):
 
 
 class StandardTransformerBlock(nn.Module):
-    """Стандартный Pre-LN Transformer блок (MHA + FFN) без сжатия токенов."""
+    """Standard Pre-LN Transformer block (MHA + FFN), without token compression."""
 
     def __init__(self, d_model, n_heads, d_ff, dropout=0.1):
         super().__init__()
@@ -242,10 +242,10 @@ class MergedTransformer(nn.Module):
 
         residual_cache = ResidualCache() if self.use_cache else None
         for i, block in enumerate(self.blocks):
-            merge = (i + 1) % 2 == 0  # каждый 2-й блок мерджит
+            merge = (i + 1) % 2 == 0  # merge in every second block
             x, was_merged = block(x, residual_cache, merge=merge)
             if was_merged and residual_cache is not None:
-                residual_cache.clear()  # очищаем кэш после применения в блоке слияния
+                residual_cache.clear()  # clear the cache after use in the merging block
 
         x = self.norm(x)
         x = x[:, 0, :]
@@ -253,7 +253,7 @@ class MergedTransformer(nn.Module):
 
 
 class MergedTransformerNoCache(MergedTransformer):
-    """MergedTransformer с явно отключенным Residual Cache для абляций."""
+    """MergedTransformer with residual aggregation disabled for ablations."""
 
     def __init__(self, *args, **kwargs):
         kwargs["use_cache"] = False
@@ -291,16 +291,16 @@ class StandardTransformer(nn.Module):
 
 def create_simple_dataset(num_samples, seq_len=16, vocab_size=50, num_classes=3):
     """
-    Простой датасет:
-    - Случайные последовательности токенов
-    - Метка: сумма всех токенов mod num_classes
+    Simple synthetic dataset:
+    - Random token sequences
+    - Label: sum of token IDs modulo num_classes
     """
     X = torch.randint(1, vocab_size, (num_samples, seq_len))
     y = torch.sum(X, dim=1) % num_classes
     return X, y
 
 
-# Для обратной совместимости
+# Backward compatibility alias
 create_simple_dataset2 = create_simple_dataset
 
 
@@ -348,7 +348,7 @@ def train_and_eval(model, X_train, y_train, X_val, y_val, device, epochs=100, lr
 # ============================================================================
 
 def run_comprehensive_test():
-    """Сравнение: Merged+Cache vs Merged no Cache vs Standard"""
+    """Compare merged+residual, merged without residual, and standard Transformer"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     VOCAB_SIZE, D_MODEL, N_HEADS, D_FF = 50, 128, 4, 256
@@ -387,10 +387,10 @@ def run_comprehensive_test():
     print(f"Params: {params_std:,}")
     acc_std = train_and_eval(model_std, X_train, y_train, X_val, y_val, device, EPOCHS, LR, BS)
 
-    # 3. Merged Transformer БЕЗ Residual Cache
+    # 3. Merged Transformer without Residual Cache
     print()
     print("=" * 60)
-    print("3. Merged Transformer БЕЗ Residual Cache (control)")
+    print("3. Merged Transformer without Residual Cache (control)")
     print("=" * 60)
     model_no_cache = MergedTransformerNoCache(
         vocab_size=VOCAB_SIZE, d_model=D_MODEL, n_heads=N_HEADS, d_ff=D_FF,
@@ -404,13 +404,13 @@ def run_comprehensive_test():
     # Summary
     print()
     print("=" * 60)
-    print("ИТОГИ:")
+    print("RESULTS:")
     print("=" * 60)
     print(f"Merged Transformer + Residual Cache: {acc_merged:.3f}  (params: {params:,})")
     print(f"Standard Transformer:                {acc_std:.3f}  (params: {params_std:,})")
-    print(f"Merged Transformer БЕЗ Cache:        {acc_no_cache:.3f}  (params: {params_nc:,})")
+    print(f"Merged Transformer without Cache:        {acc_no_cache:.3f}  (params: {params_nc:,})")
     print()
-    print(f"Residual Cache эффект:   {acc_merged - acc_no_cache:+.3f}")
+    print(f"Residual Cache effect:   {acc_merged - acc_no_cache:+.3f}")
     print(f"Merge vs Standard:       {acc_merged - acc_std:+.3f}")
     print("=" * 60)
 

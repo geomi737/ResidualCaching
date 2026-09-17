@@ -123,7 +123,7 @@ def boundary_target_indices(length, merge_ratio, device=None):
 
 
 class WindowTokenMerger(nn.Module):
-    """Сжимает завершенные окна размера merge_ratio в сжатые токены без разжатия."""
+    """Compress completed merge_ratio windows without unmerging."""
 
     def __init__(self, d_model, merge_ratio=2):
         super().__init__()
@@ -143,10 +143,10 @@ class WindowTokenMerger(nn.Module):
         remainder = T % self.merge_ratio
 
         if num_full_windows == 0:
-            # Если последовательность меньше одного окна
+            # Handle sequences shorter than a complete window
             return 2 * x if use_residual_cache and residual_tail else x
 
-        # 1. Завершенные полные окна истории:
+        # 1. Completed full windows of the history:
         x_full = x[:, :num_full_windows * self.merge_ratio, :]
         x_grouped = x_full.reshape(B, num_full_windows, self.merge_ratio, C)
         weights = F.softmax(self.merge_weight, dim=0).view(1, 1, self.merge_ratio, 1)
@@ -154,13 +154,13 @@ class WindowTokenMerger(nn.Module):
         merged = (x_grouped * weights).sum(dim=2)  # (B, num_full_windows, C)
 
         if use_residual_cache:
-            # Твоя формула: сжатый вектор + сумма участвовавших оригиналов
+            # Compressed vector plus the sum of constituent contextual states
             group_sums = x_grouped.sum(dim=2)      # (B, num_full_windows, C)
             compressed_tokens = merged + group_sums
         else:
             compressed_tokens = merged
 
-        # 2. Несжатый хвостик текущего незаполненного окна (если есть)
+        # 2. Singleton tail of the current incomplete window, if any
         if remainder > 0:
             tail = x[:, num_full_windows * self.merge_ratio:, :]
             if use_residual_cache and residual_tail:
@@ -181,10 +181,10 @@ class GPTConfig:
     n_embd: int = 768
     dropout: float = 0.0
     bias: bool = True  # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
-    # Параметры Token Merging + Residual Cache
-    merge_ratio: int = 1            # 1 = без сжатия (standard nanoGPT); >1 = сжатие N->1
-    merge_layer: int = 2            # число полных блоков до сжатия
-    use_residual_cache: bool = True  # прибавлять ли сумму участвовавших оригиналов
+    # Token merging and residual aggregation settings
+    merge_ratio: int = 1            # 1 = standard nanoGPT; >1 = N-to-1 compression
+    merge_layer: int = 2            # number of full-resolution blocks before compression
+    use_residual_cache: bool = True  # add the sum of constituent contextual states
     residual_tail: bool = True      # singleton: x + residual x; False preserves legacy tails
 
     def __post_init__(self):
@@ -268,23 +268,23 @@ class GPT(nn.Module):
         x = self.transformer.drop(tok_emb + pos_emb)
 
         if self.config.merge_ratio <= 1:
-            # Стандартный GPT
+            # Standard GPT
             for block in self.transformer.h:
                 x = block(x)
             x = self.transformer.ln_f(x)
         else:
-            # Merged GPT с сжатием токенов и Residual Cache БЕЗ развертки
+            # Merged GPT with residual aggregation and no unmerging
             merge_layer = self.config.merge_layer
 
-            # 1. Начальные слои на полной длине t
+            # 1. Early blocks at full sequence length t
             for i in range(merge_layer):
                 x = self.transformer.h[i](x)
 
-            # 2. Сжатие завершенных окон истории (t -> t // merge_ratio + remainder)
+            # 2. Compress completed history windows (t -> t // merge_ratio + remainder)
             x = self.merger(x, use_residual_cache=self.config.use_residual_cache,
                             merge_tokens=merge_tokens, residual_tail=self.config.residual_tail)
 
-            # 3. Глубокие слои работают на сжатой последовательности
+            # 3. Deep blocks operate on the compressed sequence
             for i in range(merge_layer, len(self.transformer.h)):
                 x = self.transformer.h[i](x)
 

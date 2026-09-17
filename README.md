@@ -6,7 +6,7 @@ The idea: process tokens at full resolution in the first few Transformer blocks,
 
 Project idea and architectural direction: **[geomi737](https://github.com/geomi737)**. Development was assisted by **Gemini** and **ChatGPT (including Codex)**. See [credits and provenance](AUTHORS.md).
 
-[Русское описание](README.ru.md) · [Architecture and limitations](docs/architecture.md) · [Validation](docs/validation.md) · [Original nanoGPT README](nanoGPT/README.md)
+[Architecture](docs/architecture.md) · [Proofs](docs/proofs.md) · [GPU experiments](docs/experiments.md) · [Validation](docs/validation.md) · [Original nanoGPT README](nanoGPT/README.md)
 
 ## Architecture
 
@@ -72,16 +72,21 @@ The final update is saved even when it falls between evaluation intervals. `samp
 ## Reproducible ablation
 
 ```bash
-cd nanoGPT
-python data/shakespeare/prepare.py
-python bench_ablation.py --output=../results/ablation.json
+python nanoGPT/data/shakespeare_threeway/prepare.py
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python nanoGPT/bench_ablation.py --device=cuda --seeds 1337 2027 3407 --prefix-iters=128 --output=results/ablation_cuda.json
 ```
 
-This runs baseline nanoGPT, merged+residual, and merged without residual. Validation uses the same boundary targets and the same final-prefix targets. Training timings exclude validation and warmup; actual input-token throughput and supervised-prediction throughput are reported separately. Autoregressive generation has a separate warmed-up timer. GPU peak allocated memory is reported only on CUDA, separately for training and generation.
+This runs baseline nanoGPT, merged+residual, and merged without residual on disjoint 80/10/10 train/validation/test splits. Validation monitors common boundary targets; final test scores both common boundaries and next-token predictions with complete windows and singleton tails. Accuracy means top-1 next-token accuracy. Initial weights and batch plans are checked for equality within each seed.
+
+Training timers exclude validation and warmup; actual input-token and supervised-prediction throughput are reported separately. Autoregressive generation has its own warmed-up timer. Allocated and reserved GPU memory peaks are recorded separately for training and generation. Optional `--checkpoint-dir=out-ablation` retains the final model and optimizer states for each run.
 
 ## Research status
 
-Correctness and entry-point smoke tests pass on CPU. Quality gains, generation throughput, and GPU memory savings have **not** been established by those tests. No persistent KV cache is implemented: generation recomputes the cropped prefix. The residual sum is an implicit aggregated memory path, not lossless storage of individual tokens. At initialization, equal merge weights make it a scaled average. Read [the architecture discussion](docs/architecture.md) before interpreting ablation results.
+Actual RTX 4060 measurements across three seeds and 1,000 updates per variant are recorded in [the GPU report](docs/experiments.md). On Tiny Shakespeare, residual aggregation improved plain merging: final-prefix test loss **5.533 vs 5.601**, accuracy **21.84% vs 21.14%**. Classical nanoGPT retained better quality: **5.407**, **22.61%**. These are scoped measurements on one dataset, not universal quality claims.
+
+The residual configuration processed training inputs about **1.42x faster** than baseline, but produced fewer supervised predictions per input batch and had lower predictions/s. Generation acceleration was not demonstrated under the tested shapes. The mixed-training peak stayed around **1453 MiB** because singleton-only batches remain full sized. Isolated compressed-mode microbenchmarks used about **834.5 MiB vs 1454.5 MiB**; they measure compute/memory rather than trained long-context quality.
+
+All **12 correctness/workflow tests pass with GPU access**, including float32 and BF16 causality/backward checks. No persistent KV cache is implemented: generation recomputes the cropped prefix. The aggregate is a rescaled constrained weighted average, not lossless individual-vector storage; [algebraic proofs and runtime witnesses](docs/proofs.md) explain the distinction.
 
 `merged_transformer.py` and `test_generative_merged.py` are historical prototypes. The latter has future-token leakage through unmerging and is not the supported causal implementation. Use `nanoGPT/model.py` and `tests/` for the current implementation.
 

@@ -1,6 +1,8 @@
 {
+  "complete": true,
+  "started_at_utc": "2026-09-17T16:14:38.317996+00:00",
   "config": {
-    "data_dir": "nanoGPT/data/shakespeare",
+    "data_dir": "/home/lesh/Documents/ChatGPT/ResidualCaching/nanoGPT/data/shakespeare_threeway",
     "device": "cpu",
     "block_size": 8,
     "batch_size": 2,
@@ -8,113 +10,568 @@
     "warmup_iters": 1,
     "eval_interval": 3,
     "eval_iters": 2,
+    "test_iters": 2,
+    "prefix_iters": 2,
     "n_layer": 3,
     "n_head": 2,
     "n_embd": 16,
     "merge_ratio": 2,
     "merge_layer": 1,
     "vocab_size": 50304,
-    "seed": 1337,
+    "lr_warmup_iters": 1,
+    "generation_tokens": 4,
+    "generation_repeats": 1,
+    "seeds": [
+      1337
+    ],
+    "seed": null,
+    "dtype": "float32",
     "dropout": 0.1,
     "lr": 0.001,
+    "min_lr": 0.0001,
     "unmerged_prob": 0.1,
     "output": "results/smoke_cpu.json",
-    "generation_tokens": 4,
-    "generation_repeats": 1
+    "checkpoint_dir": null
   },
   "environment": {
+    "python": "3.14.7",
     "torch": "2.14.0",
+    "cuda_build": "13.3",
     "device": "cpu",
-    "gpu": null
+    "dtype": "float32",
+    "cpu": "",
+    "tf32_matmul": true
   },
   "dataset_sha256": {
-    "train": "502a2bdc8210d1ac5d5674867cb74467dd31db575d25cf6dbb08c8bdbea8680f",
-    "val": "68a53422394c26a655ebe641f5c6f49888e8f4e45fe5d6f02abda63ba3ebd65b"
+    "train": "ee102ff6cf229211a233a96dc0d8292153e2c5618ef15b1e71fa3ec29dd08cea",
+    "val": "c991352c646e1b04cb4022d55cb19851bd8fb6e61e6810ce8b0ea6260e21ed38",
+    "test": "68a53422394c26a655ebe641f5c6f49888e8f4e45fe5d6f02abda63ba3ebd65b"
   },
   "notes": [
-    "Boundary and last-prefix validation targets are shared across models.",
-    "Last-prefix validation samples lengths uniformly from 1 to block-size.",
-    "Training throughput excludes validation, batch transfer, and warmup iterations.",
-    "Peak allocated VRAM includes model, optimizer, training, and validation after warmup.",
-    "Training predictions per input batch differ between architectures.",
-    "Generation has its own warmed-up timer and uses no persistent KV cache.",
-    "Generation peak VRAM includes model and inference allocations, after freeing the optimizer."
+    "Equal training input batches and steps; different supervised-prediction counts.",
+    "Validation monitors fixed boundary targets; test is evaluated after training only.",
+    "Prefix accuracy is top-1 next-token accuracy, not semantic/task accuracy.",
+    "Training peaks exclude validation and retain only the current step logits.",
+    "Allocated/reserved memory exclude desktop processes and non-PyTorch CUDA allocations.",
+    "Generation uses batch size 1, top-k=50, no KV cache, and cropped/reindexed prefixes.",
+    "Variant order rotates across seeds; summary reports sample standard deviation.",
+    "No universal speed, quality, or lossless-memory claim follows from this experiment."
   ],
   "results": [
     {
-      "name": "Baseline nanoGPT",
-      "merge_ratio": 1,
-      "use_residual_cache": false,
-      "step": 3,
-      "boundary_loss": 10.823020935058594,
-      "last_prefix_loss": 10.753771781921387,
-      "training_time_s": 0.026101925999682862,
-      "input_tokens_per_s": 1149.3404739697944,
-      "predictions_per_s": 1149.3404739697944,
-      "measured_input_tokens": 30,
-      "measured_predictions": 30,
-      "peak_allocated_vram_mb": null,
+      "variant": "baseline",
+      "seed": 1337,
+      "parameters": 814320,
+      "shared_initialization_sha256": "e82b8a2f7f0044594682e99605e2124018f936684dad20d50a56fae53ee99e1c",
+      "training_plan_sha256": "7c44c9be12af566fd8b7cf32f58337598f64ef1f37b97485f3f920ac7b5705f6",
+      "mode_plan_sha256": "9f44ac6acb8a37b00b615dc89259d306035be82dee7db2b472e4c48326195440",
+      "singleton_batches": 0,
+      "total_training_input_tokens": 44,
+      "total_training_predictions": 44,
+      "training": {
+        "model_time_s": 0.02529518000119424,
+        "end_to_end_time_s": 0.02567261300100654,
+        "input_tokens_per_s": 1185.9966997105234,
+        "end_to_end_input_tokens_per_s": 1168.5604421655014,
+        "predictions_per_s": 1185.9966997105234,
+        "measured_input_tokens": 30,
+        "measured_predictions": 30,
+        "peak_allocated_mib": null,
+        "peak_reserved_mib": null
+      },
       "history": [
         {
           "step": 3,
-          "boundary_loss": 10.823020935058594,
-          "last_prefix_loss": 10.753771781921387
+          "train_loss": 10.82136275551536,
+          "validation": {
+            "loss": 10.78956413269043,
+            "accuracy": 0.0,
+            "targets": 16
+          }
         }
       ],
-      "generation_time_s": 0.007822902000043541,
-      "generation_tokens_per_s": 511.3192009790915,
-      "generation_prompt_length": 8,
-      "generation_peak_allocated_vram_mb": null
+      "test_boundaries": {
+        "loss": 10.826433181762695,
+        "accuracy": 0.0,
+        "targets": 16
+      },
+      "test_prefixes": {
+        "loss": 10.8895845413208,
+        "accuracy": 0.0,
+        "targets": 4,
+        "by_remainder": {
+          "0": {
+            "loss": 10.889450073242188,
+            "accuracy": 0.0,
+            "targets": 2
+          },
+          "1": {
+            "loss": 10.889719009399414,
+            "accuracy": 0.0,
+            "targets": 2
+          }
+        }
+      },
+      "generation": [
+        {
+          "prompt_length": 4,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.006970258000364993,
+          "tokens_per_s": 573.8668496618837,
+          "repeat_time_s": [
+            0.006970258000364993
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        },
+        {
+          "prompt_length": 8,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.010510326999792596,
+          "tokens_per_s": 380.5780733633628,
+          "repeat_time_s": [
+            0.010510326999792596
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        }
+      ]
     },
     {
-      "name": "Merged + residual sum",
-      "merge_ratio": 2,
-      "use_residual_cache": true,
-      "step": 3,
-      "boundary_loss": 10.840699877057757,
-      "last_prefix_loss": 10.796175479888916,
-      "training_time_s": 0.024822772000334226,
-      "input_tokens_per_s": 1208.5676813047337,
-      "predictions_per_s": 966.854145043787,
-      "measured_input_tokens": 30,
-      "measured_predictions": 24,
-      "peak_allocated_vram_mb": null,
+      "variant": "merged_no_residual",
+      "seed": 1337,
+      "parameters": 814322,
+      "shared_initialization_sha256": "e82b8a2f7f0044594682e99605e2124018f936684dad20d50a56fae53ee99e1c",
+      "training_plan_sha256": "7c44c9be12af566fd8b7cf32f58337598f64ef1f37b97485f3f920ac7b5705f6",
+      "mode_plan_sha256": "9f44ac6acb8a37b00b615dc89259d306035be82dee7db2b472e4c48326195440",
+      "singleton_batches": 1,
+      "total_training_input_tokens": 44,
+      "total_training_predictions": 32,
+      "training": {
+        "model_time_s": 0.02358323500084225,
+        "end_to_end_time_s": 0.023952699000801658,
+        "input_tokens_per_s": 1272.0901097295846,
+        "end_to_end_input_tokens_per_s": 1252.4684587317674,
+        "predictions_per_s": 1017.6720877836677,
+        "measured_input_tokens": 30,
+        "measured_predictions": 24,
+        "peak_allocated_mib": null,
+        "peak_reserved_mib": null
+      },
       "history": [
         {
           "step": 3,
-          "boundary_loss": 10.840699877057757,
-          "last_prefix_loss": 10.796175479888916
+          "train_loss": 10.82409930229187,
+          "validation": {
+            "loss": 10.773162841796875,
+            "accuracy": 0.0,
+            "targets": 16
+          }
         }
       ],
-      "generation_time_s": 0.007511191000958206,
-      "generation_tokens_per_s": 532.5387144981026,
-      "generation_prompt_length": 8,
-      "generation_peak_allocated_vram_mb": null
+      "learned_merge_weights": [
+        0.5002719163894653,
+        0.49972808361053467
+      ],
+      "test_boundaries": {
+        "loss": 10.816174507141113,
+        "accuracy": 0.0,
+        "targets": 16
+      },
+      "test_prefixes": {
+        "loss": 10.894187927246094,
+        "accuracy": 0.0,
+        "targets": 4,
+        "by_remainder": {
+          "0": {
+            "loss": 10.920076370239258,
+            "accuracy": 0.0,
+            "targets": 2
+          },
+          "1": {
+            "loss": 10.86829948425293,
+            "accuracy": 0.0,
+            "targets": 2
+          }
+        }
+      },
+      "generation": [
+        {
+          "prompt_length": 4,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.007137258999136975,
+          "tokens_per_s": 560.4392387166661,
+          "repeat_time_s": [
+            0.007137258999136975
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        },
+        {
+          "prompt_length": 8,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.0071578290007892065,
+          "tokens_per_s": 558.8286615339607,
+          "repeat_time_s": [
+            0.0071578290007892065
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        }
+      ]
     },
     {
-      "name": "Merged without residual sum",
-      "merge_ratio": 2,
-      "use_residual_cache": false,
-      "step": 3,
-      "boundary_loss": 10.8323974609375,
-      "last_prefix_loss": 10.796859741210938,
-      "training_time_s": 0.02502464300050633,
-      "input_tokens_per_s": 1198.8183008002552,
-      "predictions_per_s": 959.0546406402042,
-      "measured_input_tokens": 30,
-      "measured_predictions": 24,
-      "peak_allocated_vram_mb": null,
+      "variant": "merged_residual",
+      "seed": 1337,
+      "parameters": 814322,
+      "shared_initialization_sha256": "e82b8a2f7f0044594682e99605e2124018f936684dad20d50a56fae53ee99e1c",
+      "training_plan_sha256": "7c44c9be12af566fd8b7cf32f58337598f64ef1f37b97485f3f920ac7b5705f6",
+      "mode_plan_sha256": "9f44ac6acb8a37b00b615dc89259d306035be82dee7db2b472e4c48326195440",
+      "singleton_batches": 1,
+      "total_training_input_tokens": 44,
+      "total_training_predictions": 32,
+      "training": {
+        "model_time_s": 0.02496854699893447,
+        "end_to_end_time_s": 0.025332568999147043,
+        "input_tokens_per_s": 1201.5116458831283,
+        "end_to_end_input_tokens_per_s": 1184.2462563117901,
+        "predictions_per_s": 961.2093167065026,
+        "measured_input_tokens": 30,
+        "measured_predictions": 24,
+        "peak_allocated_mib": null,
+        "peak_reserved_mib": null
+      },
       "history": [
         {
           "step": 3,
-          "boundary_loss": 10.8323974609375,
-          "last_prefix_loss": 10.796859741210938
+          "train_loss": 10.823672771453857,
+          "validation": {
+            "loss": 10.777683734893799,
+            "accuracy": 0.0,
+            "targets": 16
+          }
         }
       ],
-      "generation_time_s": 0.007444321001457865,
-      "generation_tokens_per_s": 537.3223426578,
-      "generation_prompt_length": 8,
-      "generation_peak_allocated_vram_mb": null
+      "learned_merge_weights": [
+        0.5002315044403076,
+        0.49976846575737
+      ],
+      "test_boundaries": {
+        "loss": 10.819738388061523,
+        "accuracy": 0.0,
+        "targets": 16
+      },
+      "test_prefixes": {
+        "loss": 10.889931201934814,
+        "accuracy": 0.0,
+        "targets": 4,
+        "by_remainder": {
+          "0": {
+            "loss": 10.9085054397583,
+            "accuracy": 0.0,
+            "targets": 2
+          },
+          "1": {
+            "loss": 10.871356964111328,
+            "accuracy": 0.0,
+            "targets": 2
+          }
+        }
+      },
+      "generation": [
+        {
+          "prompt_length": 4,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.007510592000471661,
+          "tokens_per_s": 532.5811866426511,
+          "repeat_time_s": [
+            0.007510592000471661
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        },
+        {
+          "prompt_length": 8,
+          "new_tokens_per_repeat": 4,
+          "repeats": 1,
+          "time_s": 0.0077807950001442805,
+          "tokens_per_s": 514.0862855178458,
+          "repeat_time_s": [
+            0.0077807950001442805
+          ],
+          "peak_allocated_mib": null,
+          "peak_reserved_mib": null
+        }
+      ]
     }
-  ]
+  ],
+  "summary": {
+    "baseline": {
+      "training": {
+        "input_tokens_per_s": {
+          "mean": 1185.9966997105234,
+          "std": null,
+          "n": 1
+        },
+        "predictions_per_s": {
+          "mean": 1185.9966997105234,
+          "std": null,
+          "n": 1
+        },
+        "peak_allocated_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        },
+        "peak_reserved_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        }
+      },
+      "test_boundaries": {
+        "loss": {
+          "mean": 10.826433181762695,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "test_prefixes": {
+        "loss": {
+          "mean": 10.8895845413208,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "generation": {
+        "4": {
+          "tokens_per_s": {
+            "mean": 573.8668496618837,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        },
+        "8": {
+          "tokens_per_s": {
+            "mean": 380.5780733633628,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        }
+      }
+    },
+    "merged_no_residual": {
+      "training": {
+        "input_tokens_per_s": {
+          "mean": 1272.0901097295846,
+          "std": null,
+          "n": 1
+        },
+        "predictions_per_s": {
+          "mean": 1017.6720877836677,
+          "std": null,
+          "n": 1
+        },
+        "peak_allocated_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        },
+        "peak_reserved_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        }
+      },
+      "test_boundaries": {
+        "loss": {
+          "mean": 10.816174507141113,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "test_prefixes": {
+        "loss": {
+          "mean": 10.894187927246094,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "generation": {
+        "4": {
+          "tokens_per_s": {
+            "mean": 560.4392387166661,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        },
+        "8": {
+          "tokens_per_s": {
+            "mean": 558.8286615339607,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        }
+      }
+    },
+    "merged_residual": {
+      "training": {
+        "input_tokens_per_s": {
+          "mean": 1201.5116458831283,
+          "std": null,
+          "n": 1
+        },
+        "predictions_per_s": {
+          "mean": 961.2093167065026,
+          "std": null,
+          "n": 1
+        },
+        "peak_allocated_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        },
+        "peak_reserved_mib": {
+          "mean": null,
+          "std": null,
+          "n": 0
+        }
+      },
+      "test_boundaries": {
+        "loss": {
+          "mean": 10.819738388061523,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "test_prefixes": {
+        "loss": {
+          "mean": 10.889931201934814,
+          "std": null,
+          "n": 1
+        },
+        "accuracy": {
+          "mean": 0.0,
+          "std": null,
+          "n": 1
+        }
+      },
+      "generation": {
+        "4": {
+          "tokens_per_s": {
+            "mean": 532.5811866426511,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        },
+        "8": {
+          "tokens_per_s": {
+            "mean": 514.0862855178458,
+            "std": null,
+            "n": 1
+          },
+          "peak_allocated_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          },
+          "peak_reserved_mib": {
+            "mean": null,
+            "std": null,
+            "n": 0
+          }
+        }
+      }
+    }
+  },
+  "finished_at_utc": "2026-09-17T16:14:40.798422+00:00",
+  "environment_after": {
+    "python": "3.14.7",
+    "torch": "2.14.0",
+    "cuda_build": "13.3",
+    "device": "cpu",
+    "dtype": "float32",
+    "cpu": "",
+    "tf32_matmul": true
+  }
 }

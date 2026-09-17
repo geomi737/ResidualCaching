@@ -1,0 +1,221 @@
+{
+  "uniform_scaled_mean_max_error": 0.0,
+  "nonuniform_scaled_average_max_error": 8.881784197001252e-16,
+  "different_inputs_same_compressed_output_max_error": 8.326672684688674e-17,
+  "collision_input_difference_norm": 2.4270661509065357,
+  "cancellation_input_norm": 1.5657496497697485,
+  "cancellation_output_norm": 0.0,
+  "runtime_config": {
+    "block_size": 8,
+    "vocab_size": 19,
+    "n_layer": 3,
+    "n_head": 2,
+    "n_embd": 16,
+    "dropout": 0,
+    "bias": true,
+    "merge_ratio": 2,
+    "merge_layer": 1,
+    "use_residual_cache": true,
+    "residual_tail": true
+  },
+  "generation_calls": 6,
+  "early_block_input_lengths": [
+    5,
+    6,
+    7,
+    8,
+    8,
+    8
+  ],
+  "deep_block_input_lengths": [
+    3,
+    3,
+    4,
+    4,
+    4,
+    4
+  ],
+  "recomputed_early_positions": 42,
+  "positional_indices": [
+    [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  ],
+  "cropped_prefix_absolute_offsets": [
+    0,
+    0,
+    0,
+    0,
+    1,
+    2
+  ],
+  "first_window_absolute_positions": [
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      0,
+      1
+    ],
+    [
+      1,
+      2
+    ],
+    [
+      2,
+      3
+    ]
+  ],
+  "training_target_counts": [
+    {
+      "length": 1,
+      "ratio": 2,
+      "baseline_targets": 1,
+      "merged_targets": 1,
+      "indices": [
+        0
+      ]
+    },
+    {
+      "length": 7,
+      "ratio": 2,
+      "baseline_targets": 7,
+      "merged_targets": 4,
+      "indices": [
+        1,
+        3,
+        5,
+        6
+      ]
+    },
+    {
+      "length": 8,
+      "ratio": 2,
+      "baseline_targets": 8,
+      "merged_targets": 4,
+      "indices": [
+        1,
+        3,
+        5,
+        7
+      ]
+    },
+    {
+      "length": 9,
+      "ratio": 2,
+      "baseline_targets": 9,
+      "merged_targets": 5,
+      "indices": [
+        1,
+        3,
+        5,
+        7,
+        8
+      ]
+    },
+    {
+      "length": 1,
+      "ratio": 3,
+      "baseline_targets": 1,
+      "merged_targets": 1,
+      "indices": [
+        0
+      ]
+    },
+    {
+      "length": 7,
+      "ratio": 3,
+      "baseline_targets": 7,
+      "merged_targets": 3,
+      "indices": [
+        2,
+        5,
+        6
+      ]
+    },
+    {
+      "length": 8,
+      "ratio": 3,
+      "baseline_targets": 8,
+      "merged_targets": 4,
+      "indices": [
+        2,
+        5,
+        6,
+        7
+      ]
+    },
+    {
+      "length": 9,
+      "ratio": 3,
+      "baseline_targets": 9,
+      "merged_targets": 3,
+      "indices": [
+        2,
+        5,
+        8
+      ]
+    }
+  ],
+  "scope": "Linear aggregation of arbitrary hidden states; not a claim that all collisions occur on natural text."
+}

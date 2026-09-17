@@ -55,7 +55,7 @@ This addresses training coverage: tensor compatibility alone does not imply that
 - `merge_layer` means the number of early blocks, and must satisfy `0<=merge_layer<n_layer` when merging is active. Invalid settings fail instead of silently moving the compression boundary.
 - Training checkpoints persist all architecture flags. Resume and sampling preserve the old pass-through singleton convention for checkpoints without `residual_tail`.
 - The training entry point supports merged models from scratch and resume. Upstream pretrained GPT-2 import remains baseline-only.
-- DDP enables unused-parameter detection for merged models because singleton-only batches do not use the merge weights. GPU/DDP execution has not been validated in the CPU-only release environment.
+- DDP enables unused-parameter detection for merged models because singleton-only batches do not use the merge weights. Single-GPU execution and float32/BF16 correctness have been validated on RTX 4060; compilation and multi-GPU DDP have not.
 
 ## What residual caching does and does not mean
 
@@ -69,7 +69,7 @@ C = (R+1) * mean(x₀,…,xᵣ₋₁)
 
 For pairs it is three times the mean. At initialization, the extra sum therefore introduces no new direction in the compressed vector. Learned nonuniform weights change the coefficients to `1+a[i]`, but the result remains a single linear aggregate, not lossless memory. Pre-layer normalization can remove much of a positive global scale difference from an attention/MLP branch; the residual stream can still evolve differently because the branch outputs and skip path have different relative scales.
 
-The useful effect, if any, must be measured. Existing tests establish alignment and causality, not preservation of all fine details or better downstream accuracy. Future ablations should include a simple scaled-average control and multiple seeds.
+For any learned weights, define `q[i]=(1+a[i])/(R+1)`: the operator is exactly `(R+1)*sum(q[i]*x[i])`, with normalized positive weights. [Explicit proofs and collision examples](proofs.md) establish its limits. [Three-seed GPU experiments](experiments.md) find better held-out quality than plain merging in the tested setup, while final-prefix quality remains below baseline. Those runs do not establish lossless preservation or isolate scale from weighting/optimization; a mechanism control and broader datasets are still needed.
 
 ## Performance expectations and remaining work
 
@@ -77,4 +77,4 @@ Only deeper blocks process `S` rather than `T` positions. Their projection and M
 
 Generation currently recomputes the cropped prefix at every step. Implementing a persistent KV cache requires explicit handling of the transition from singleton tails to a completed window: temporary tail states must be removed or replaced consistently in every deep layer. Prefix cropping also resets original positional indices and window grouping. That is future work, not an implemented feature in this release.
 
-The benchmark reports matched boundary loss and final-prefix loss over uniformly sampled prefix lengths. Neither is labeled as full-sequence perplexity. Training compute comparisons must also account for different supervised-prediction counts, singleton-batch proportions, warmup, and validation overhead.
+The benchmark reports matched held-out boundary loss/accuracy and final-prefix loss/accuracy with balanced near-block-size lengths covering all remainders. Neither is labeled as full-sequence perplexity. It measures training and generation separately, checks paired initial weights/data plans, and records allocated/reserved memory. Training compute comparisons must also account for different supervised-prediction counts, singleton-batch proportions, warmup, and validation overhead.

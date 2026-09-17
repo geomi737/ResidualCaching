@@ -1,0 +1,1923 @@
+{
+  "complete": true,
+  "config": {
+    "device": "cuda",
+    "contexts": [
+      128,
+      512,
+      1024
+    ],
+    "merge_layers": [
+      0,
+      2,
+      4
+    ],
+    "seeds": [
+      11,
+      22,
+      33
+    ],
+    "n_embd": 192,
+    "n_layer": 6,
+    "n_head": 6,
+    "vocab_size": 50304,
+    "train_steps": 20,
+    "train_warmup": 5,
+    "generation_tokens": 32,
+    "generation_repeats": 5,
+    "output": "results/scaling_cuda.json"
+  },
+  "environment": {
+    "torch": "2.14.0",
+    "cuda_build": "13.3",
+    "gpu": "NVIDIA GeForce RTX 4060",
+    "dtype": "bfloat16"
+  },
+  "scope": "Fresh models and random tokens: compute/memory only, not trained LM quality.",
+  "notes": [
+    "Training modes are measured independently; no singleton batches in compressed measurements.",
+    "Batch size changes with context to keep approximately 2048 input tokens per step.",
+    "Fixed-context inference is one next-token forward, not a persistent KV-cache decode.",
+    "Generation prefix grows/crops at the largest configured context; GPU timers synchronize."
+  ],
+  "results": [
+    {
+      "variant": "baseline",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.4772821930000646,
+        "input_tokens_per_s": 85819.25033183557,
+        "predictions_per_s": 85819.25033183557,
+        "peak_allocated_mib": 1454.4873046875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 544.3047076940383,
+        "peak_allocated_mib": 82.7841796875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 433.33422320146616,
+        "time_s": 0.3692300110014912,
+        "peak_allocated_mib": 83.14404296875,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3024101270002575,
+        "input_tokens_per_s": 135445.1995582976,
+        "predictions_per_s": 67722.5997791488,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 525.1910486171942,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 418.97693933456054,
+        "time_s": 0.38188259299931815,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30191813400233514,
+        "input_tokens_per_s": 135665.91531624662,
+        "predictions_per_s": 67832.95765812331,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 506.8325025315224,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 411.56261290334527,
+        "time_s": 0.3887622319998627,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3130670100017596,
+        "input_tokens_per_s": 130834.60949708428,
+        "predictions_per_s": 65417.30474854214,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 518.6131531282454,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 419.3008192376503,
+        "time_s": 0.3815876160006155,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30646089000038046,
+        "input_tokens_per_s": 133654.90128266986,
+        "predictions_per_s": 66827.45064133493,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 530.5281241408278,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 416.8265337536564,
+        "time_s": 0.38385272300001816,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3085860250012047,
+        "input_tokens_per_s": 132734.46197001336,
+        "predictions_per_s": 66367.23098500668,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 530.4175052491122,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 414.7858192873036,
+        "time_s": 0.3857412490015122,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3095441630011919,
+        "input_tokens_per_s": 132323.60643751593,
+        "predictions_per_s": 66161.80321875797,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 536.5874572390615,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 387.88731951966565,
+        "time_s": 0.4124909269994532,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "singleton_no_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.46452213599877723,
+        "input_tokens_per_s": 88176.63750712587,
+        "predictions_per_s": 88176.63750712587,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "singleton_residual",
+      "seed": 11,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.4711133470045752,
+        "input_tokens_per_s": 86942.98359499083,
+        "predictions_per_s": 86942.98359499083,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "baseline",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.47095762499884586,
+        "input_tokens_per_s": 86971.73126796786,
+        "predictions_per_s": 86971.73126796786,
+        "peak_allocated_mib": 1454.490234375,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 531.4745782368205,
+        "peak_allocated_mib": 83.6337890625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 437.58993601216827,
+        "time_s": 0.3656391220010846,
+        "peak_allocated_mib": 83.99658203125,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.30521836199841346,
+        "input_tokens_per_s": 134199.00340141697,
+        "predictions_per_s": 67099.50170070848,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 505.97309332154765,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 382.2498972852653,
+        "time_s": 0.418574343999353,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.29982321099669207,
+        "input_tokens_per_s": 136613.8394150275,
+        "predictions_per_s": 68306.91970751375,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 518.2765697375104,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 408.19870778223174,
+        "time_s": 0.3919659640014288,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.30690597300053923,
+        "input_tokens_per_s": 133461.07147914008,
+        "predictions_per_s": 66730.53573957004,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 510.1147048537791,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 419.5834193811866,
+        "time_s": 0.38133060700056376,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3134373589982715,
+        "input_tokens_per_s": 130680.01890682685,
+        "predictions_per_s": 65340.009453413426,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 518.4570394976921,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 413.15389240217513,
+        "time_s": 0.3872648980013764,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3210510940043605,
+        "input_tokens_per_s": 127580.93887524234,
+        "predictions_per_s": 63790.46943762117,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 525.4517007450884,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 412.0328996111552,
+        "time_s": 0.3883185060003598,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3139505800045299,
+        "input_tokens_per_s": 130466.39378531805,
+        "predictions_per_s": 65233.19689265903,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 520.5825210143951,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.17393857336674,
+        "time_s": 0.3891297210011544,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "baseline",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.47807871400254953,
+        "input_tokens_per_s": 85676.26794566211,
+        "predictions_per_s": 85676.26794566211,
+        "peak_allocated_mib": 1454.494140625,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 541.2738730117608,
+        "peak_allocated_mib": 84.7666015625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 419.4285908298037,
+        "time_s": 0.38147137200030556,
+        "peak_allocated_mib": 85.06396484375,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.31168537600206037,
+        "input_tokens_per_s": 131414.57108250482,
+        "predictions_per_s": 65707.28554125241,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 516.6574094578102,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 417.3022310047358,
+        "time_s": 0.3834151560004102,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.30482110399498197,
+        "input_tokens_per_s": 134373.8982084203,
+        "predictions_per_s": 67186.94910421014,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 528.2010613795086,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.7263673447016,
+        "time_s": 0.3886076110011345,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.31444166900655546,
+        "input_tokens_per_s": 130262.63385959216,
+        "predictions_per_s": 65131.31692979608,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 513.159132057119,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 390.4873884690699,
+        "time_s": 0.4097443470000144,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3121643579997908,
+        "input_tokens_per_s": 131212.92982470294,
+        "predictions_per_s": 65606.46491235147,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 509.298343897973,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 410.898155208685,
+        "time_s": 0.38939089400082594,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3236348159971385,
+        "input_tokens_per_s": 126562.40297818316,
+        "predictions_per_s": 63281.20148909158,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 514.2857815804314,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 406.63408463552827,
+        "time_s": 0.3934741480006778,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 11,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.32108241400055704,
+        "input_tokens_per_s": 127568.49398774278,
+        "predictions_per_s": 63784.24699387139,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 503.2595973132058,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 381.85923025309916,
+        "time_s": 0.4190025730003981,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30722731099558587,
+        "input_tokens_per_s": 133321.4806563486,
+        "predictions_per_s": 66660.7403281743,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 517.1789335199692,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 413.6637532886569,
+        "time_s": 0.38678757500019856,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30490913500580064,
+        "input_tokens_per_s": 134335.1028142229,
+        "predictions_per_s": 67167.55140711144,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 516.9445720165579,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 417.3147836946221,
+        "time_s": 0.38340362300004927,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30806123899674276,
+        "input_tokens_per_s": 132960.57671323293,
+        "predictions_per_s": 66480.28835661647,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 495.4726410373391,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 415.62654500286357,
+        "time_s": 0.38496097499955795,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.31052684299902467,
+        "input_tokens_per_s": 131904.8607985515,
+        "predictions_per_s": 65952.43039927575,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 497.44311008084577,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 403.44803128003895,
+        "time_s": 0.39658143700035,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3125766199937061,
+        "input_tokens_per_s": 131039.87112287781,
+        "predictions_per_s": 65519.935561438906,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 513.1149960988107,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 414.30127396057736,
+        "time_s": 0.38619239200124866,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.317651574001502,
+        "input_tokens_per_s": 128946.31524730402,
+        "predictions_per_s": 64473.15762365201,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 532.6370332729538,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 412.71087165469595,
+        "time_s": 0.3876806039988878,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "singleton_no_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.46487577699554095,
+        "input_tokens_per_s": 88109.5596434849,
+        "predictions_per_s": 88109.5596434849,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "singleton_residual",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.4700260990066454,
+        "input_tokens_per_s": 87144.0970758113,
+        "predictions_per_s": 87144.0970758113,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "baseline",
+      "seed": 22,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.46187868700144463,
+        "input_tokens_per_s": 88681.29479174667,
+        "predictions_per_s": 88681.29479174667,
+        "peak_allocated_mib": 1454.4873046875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 483.73029038705613,
+        "peak_allocated_mib": 82.7841796875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 435.54936494577066,
+        "time_s": 0.3673521600012464,
+        "peak_allocated_mib": 83.14404296875,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3011172630067449,
+        "input_tokens_per_s": 136026.7411805032,
+        "predictions_per_s": 68013.3705902516,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 536.4701558795059,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 414.1385181793611,
+        "time_s": 0.3863441649991728,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3060545159969479,
+        "input_tokens_per_s": 133832.36599720185,
+        "predictions_per_s": 66916.18299860093,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 511.1126652325368,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 416.0605206626119,
+        "time_s": 0.3845594379999966,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.30841881400192506,
+        "input_tokens_per_s": 132806.42470710084,
+        "predictions_per_s": 66403.21235355042,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 524.1044109046209,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 405.62538214669405,
+        "time_s": 0.39445263300149236,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3181762219937809,
+        "input_tokens_per_s": 128733.6927421327,
+        "predictions_per_s": 64366.84637106635,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 507.239628317933,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 412.500036029558,
+        "time_s": 0.38787875399975746,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.31544858400047815,
+        "input_tokens_per_s": 129846.8342464898,
+        "predictions_per_s": 64923.4171232449,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 533.3304490791359,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.83945035167807,
+        "time_s": 0.38850090699997963,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.31899497299673385,
+        "input_tokens_per_s": 128403.2773783535,
+        "predictions_per_s": 64201.63868917675,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 499.512585605652,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 419.2661880021338,
+        "time_s": 0.3816191349997098,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "baseline",
+      "seed": 22,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.47641973799909465,
+        "input_tokens_per_s": 85974.60754255702,
+        "predictions_per_s": 85974.60754255702,
+        "peak_allocated_mib": 1454.490234375,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 555.0616185536466,
+        "peak_allocated_mib": 83.6337890625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 435.12115187044435,
+        "time_s": 0.36771367999972426,
+        "peak_allocated_mib": 83.99658203125,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.30180287899565883,
+        "input_tokens_per_s": 135717.72455023258,
+        "predictions_per_s": 67858.86227511629,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 525.6894830250504,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 418.8639736218294,
+        "time_s": 0.3819855850015301,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.30332602000089537,
+        "input_tokens_per_s": 135036.22274105958,
+        "predictions_per_s": 67518.11137052979,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 456.33297510993407,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 414.7826611701557,
+        "time_s": 0.3857441860000108,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.31140248899646394,
+        "input_tokens_per_s": 131533.9518704525,
+        "predictions_per_s": 65766.97593522625,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 513.260745776971,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 416.53011095812815,
+        "time_s": 0.3841258909997123,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3126511010050308,
+        "input_tokens_per_s": 131008.65427414862,
+        "predictions_per_s": 65504.32713707431,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 493.56350739987636,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 409.4247049105676,
+        "time_s": 0.39079224600027374,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3205636359998607,
+        "input_tokens_per_s": 127774.94200876172,
+        "predictions_per_s": 63887.47100438086,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 493.29001760174754,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 390.1803848792154,
+        "time_s": 0.4100667439997778,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.31764946099792724,
+        "input_tokens_per_s": 128947.17299793333,
+        "predictions_per_s": 64473.586498966666,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 510.22771350494537,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.9065893783237,
+        "time_s": 0.3884375830002682,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "baseline",
+      "seed": 22,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.471597992007446,
+        "input_tokens_per_s": 86853.63528721998,
+        "predictions_per_s": 86853.63528721998,
+        "peak_allocated_mib": 1454.494140625,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 538.7906649586638,
+        "peak_allocated_mib": 84.7666015625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 402.21243789089476,
+        "time_s": 0.3977997319998394,
+        "peak_allocated_mib": 85.06396484375,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3095422550013609,
+        "input_tokens_per_s": 132324.42207226253,
+        "predictions_per_s": 66162.21103613127,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 523.7735168725255,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 410.43946520703076,
+        "time_s": 0.38982606099853,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30647238199708227,
+        "input_tokens_per_s": 133649.88953683258,
+        "predictions_per_s": 66824.94476841629,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 519.1560267367889,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 413.6484420296176,
+        "time_s": 0.3868018920002214,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30375308499969833,
+        "input_tokens_per_s": 134846.36707489137,
+        "predictions_per_s": 67423.18353744569,
+        "peak_allocated_mib": 834.47412109375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 509.04091794259534,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 411.2429176921791,
+        "time_s": 0.3890644510011043,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.3082614119994105,
+        "input_tokens_per_s": 132874.23727261176,
+        "predictions_per_s": 66437.11863630588,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 537.7934624635457,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 411.4165447831397,
+        "time_s": 0.3889002569994773,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.31693221600835386,
+        "input_tokens_per_s": 129238.99159219698,
+        "predictions_per_s": 64619.49579609849,
+        "peak_allocated_mib": 849.30224609375,
+        "peak_reserved_mib": 996.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 515.6455417069767,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 407.7168392897641,
+        "time_s": 0.39242921699951694,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "singleton_no_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.47047918799944455,
+        "input_tokens_per_s": 87060.17406246747,
+        "predictions_per_s": 87060.17406246747,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "singleton_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": false,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.46577327900558885,
+        "input_tokens_per_s": 87939.7806749419,
+        "predictions_per_s": 87939.7806749419,
+        "peak_allocated_mib": 1454.48779296875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": null,
+      "generation": null
+    },
+    {
+      "variant": "baseline",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.4610997369964025,
+        "input_tokens_per_s": 88831.10683778067,
+        "predictions_per_s": 88831.10683778067,
+        "peak_allocated_mib": 1454.4873046875,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 474.13493192805595,
+        "peak_allocated_mib": 82.7841796875,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 430.0310876994081,
+        "time_s": 0.37206612400041195,
+        "peak_allocated_mib": 83.14404296875,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 128,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 16,
+        "steps": 20,
+        "time_s": 0.30190156900061993,
+        "input_tokens_per_s": 135673.35915341298,
+        "predictions_per_s": 67836.67957670649,
+        "peak_allocated_mib": 819.77099609375,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 509.49745025827707,
+        "peak_allocated_mib": 82.73779296875,
+        "peak_reserved_mib": 110.0
+      },
+      "generation": {
+        "tokens_per_s": 413.4545842976792,
+        "time_s": 0.38698325300174474,
+        "peak_allocated_mib": 83.08642578125,
+        "peak_reserved_mib": 112.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3052327770037664,
+        "input_tokens_per_s": 134192.66568313068,
+        "predictions_per_s": 67096.33284156534,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 507.23743620368344,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 405.77877156809666,
+        "time_s": 0.3943035250013054,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.31321341700277117,
+        "input_tokens_per_s": 130773.45278487098,
+        "predictions_per_s": 65386.72639243549,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 529.5754686354948,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 407.5312394533058,
+        "time_s": 0.39260793900029967,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.30869090499436425,
+        "input_tokens_per_s": 132689.36446555756,
+        "predictions_per_s": 66344.68223277878,
+        "peak_allocated_mib": 834.47705078125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 474.09641040538787,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 409.01183548307614,
+        "time_s": 0.39118672400036303,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.32305897199148603,
+        "input_tokens_per_s": 126787.9970876632,
+        "predictions_per_s": 63393.9985438316,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 521.0601166070703,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 407.3488720340441,
+        "time_s": 0.3927837070004898,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3100349619980989,
+        "input_tokens_per_s": 132114.1323417943,
+        "predictions_per_s": 66057.06617089715,
+        "peak_allocated_mib": 849.30517578125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 509.77789690584524,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.72063875648763,
+        "time_s": 0.38861301799988723,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "baseline",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.4726625490002334,
+        "input_tokens_per_s": 86658.01867873347,
+        "predictions_per_s": 86658.01867873347,
+        "peak_allocated_mib": 1454.490234375,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 536.402398998711,
+        "peak_allocated_mib": 83.6337890625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 441.2187189037699,
+        "time_s": 0.3626319399991189,
+        "peak_allocated_mib": 83.99658203125,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 512,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 4,
+        "steps": 20,
+        "time_s": 0.3075347500034695,
+        "input_tokens_per_s": 133188.20068150965,
+        "predictions_per_s": 66594.10034075483,
+        "peak_allocated_mib": 819.77392578125,
+        "peak_reserved_mib": 976.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 458.3156192434249,
+        "peak_allocated_mib": 83.44677734375,
+        "peak_reserved_mib": 112.0
+      },
+      "generation": {
+        "tokens_per_s": 414.62174788685286,
+        "time_s": 0.38589389200024016,
+        "peak_allocated_mib": 83.79833984375,
+        "peak_reserved_mib": 114.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.30785612799627415,
+        "input_tokens_per_s": 133049.16249871018,
+        "predictions_per_s": 66524.58124935509,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 525.7523600418716,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 408.98896812577084,
+        "time_s": 0.3912085960000695,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3133487579998473,
+        "input_tokens_per_s": 130716.96936491436,
+        "predictions_per_s": 65358.48468245718,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 499.9763236208008,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.6920416306161,
+        "time_s": 0.3886400120009057,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3168195160051255,
+        "input_tokens_per_s": 129284.96487993294,
+        "predictions_per_s": 64642.48243996647,
+        "peak_allocated_mib": 834.48095703125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 512.9308955453395,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 411.0297310779547,
+        "time_s": 0.389266244999817,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.32056865099548304,
+        "input_tokens_per_s": 127772.9430897382,
+        "predictions_per_s": 63886.4715448691,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 439.34590550684067,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 398.71523087535354,
+        "time_s": 0.40128890900086844,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 4,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3229412360033166,
+        "input_tokens_per_s": 126834.22069883742,
+        "predictions_per_s": 63417.11034941871,
+        "peak_allocated_mib": 849.30908203125,
+        "peak_reserved_mib": 994.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 493.68582981929154,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 390.69084418852515,
+        "time_s": 0.4095309690001159,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "baseline",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 2,
+      "merge_ratio": 1,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.47527030000128434,
+        "input_tokens_per_s": 86182.53654791665,
+        "predictions_per_s": 86182.53654791665,
+        "peak_allocated_mib": 1454.494140625,
+        "peak_reserved_mib": 1798.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 531.4033782879345,
+        "peak_allocated_mib": 84.7666015625,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 421.46551694554375,
+        "time_s": 0.37962773599974753,
+        "peak_allocated_mib": 85.06396484375,
+        "peak_reserved_mib": 116.0
+      }
+    },
+    {
+      "variant": "merged_no_residual",
+      "seed": 33,
+      "context": 1024,
+      "merge_layer": 0,
+      "merge_ratio": 2,
+      "merge_tokens": true,
+      "training": {
+        "batch_size": 2,
+        "steps": 20,
+        "time_s": 0.3091049150007166,
+        "input_tokens_per_s": 132511.64252727927,
+        "predictions_per_s": 66255.82126363963,
+        "peak_allocated_mib": 819.77783203125,
+        "peak_reserved_mib": 974.0
+      },
+      "fixed_context_inference": {
+        "next_token_forwards_per_s": 524.0832582357453,
+        "peak_allocated_mib": 84.39208984375,
+        "peak_reserved_mib": 114.0
+      },
+      "generation": {
+        "tokens_per_s": 413.0943344397775,
+        "time_s": 0.3873207319993526,
+        "peak_allocated_mib": 84.689453125,
+        "peak_reserved_mib": 116.0
+      }
+    }
+  ]
+}

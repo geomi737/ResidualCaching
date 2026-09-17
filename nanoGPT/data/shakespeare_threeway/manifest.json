@@ -1,0 +1,26 @@
+{
+  "source_url": "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt",
+  "source_sha256": "86c4e6aa9db7c042ec79f339dcb96d42b0075e16b8fc2e86bf0ca57e2dc565ed",
+  "tokenizer": "tiktoken/gpt2",
+  "split_method": "contiguous raw-text 80/10/10 before tokenization",
+  "splits": {
+    "train": {
+      "character_start": 0,
+      "character_end": 892315,
+      "tokens": 267688,
+      "sha256": "ee102ff6cf229211a233a96dc0d8292153e2c5618ef15b1e71fa3ec29dd08cea"
+    },
+    "val": {
+      "character_start": 892315,
+      "character_end": 1003854,
+      "tokens": 34279,
+      "sha256": "c991352c646e1b04cb4022d55cb19851bd8fb6e61e6810ce8b0ea6260e21ed38"
+    },
+    "test": {
+      "character_start": 1003854,
+      "character_end": 1115394,
+      "tokens": 36059,
+      "sha256": "68a53422394c26a655ebe641f5c6f49888e8f4e45fe5d6f02abda63ba3ebd65b"
+    }
+  }
+}

@@ -1,39 +1,40 @@
-# Validation and how to reproduce it
+# Validation and reproduction
 
-## CPU correctness suite
-
-Run from the project root:
+## Correctness and workflow suite
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-The release preparation environment was Python 3.14 and PyTorch 2.14.0, with no CUDA device. Nine tests passed, including:
+**Twelve tests passed with real CUDA access** on RTX 4060, Python 3.14.7, PyTorch 2.14.0/CUDA 13.3. In the restricted execution environment eleven pass and the GPU test is skipped, because those restrictions hide the GPU. The actual CUDA runs used execution outside those restrictions.
 
-- Correct shifted-target indices for ratios 1, 2, and 3, including sequences shorter than a window and multi-token tails.
-- The learned weighted merge plus residual-sum formula, singleton scaling, cache-off ablation, and legacy tail behavior.
-- Explicit cross-entropy alignment, ignored targets, and finite merger gradients.
-- Every full-sequence prediction matching the prediction from its corresponding exact causal prefix, with residuals on/off and singleton-only mode.
-- Zero gradients into future input representations from a boundary prediction.
-- The inference vocabulary projection receiving only one position and matching the last training-mode prediction.
-- Generation through changing tails and context cropping.
-- Invalid configuration and input rejection.
-- Real singleton-only training, architecture restoration on merged resume, merge-weight updates, final-checkpoint saving, and sampling through the actual CLI scripts.
+The suite covers shifted-target alignment for ratios 1/2/3 and short/multi-token tails; residual and singleton formulas; padding-aware loss; finite gradients; every boundary prediction matching its exact causal prefix; zero future-input gradients; last-position-only inference projection; cropping and generation; invalid inputs; real singleton training, merged resume, and sampling; independent collision/scaling/recomputation witnesses; and the correctness of held-out top-1 accuracy.
 
-GitHub Actions runs the same suite on Python 3.11 with CPU PyTorch. GPU autocast, GPU memory use, compilation, and multi-GPU DDP are outside the local validation performed for this release.
+The GPU test checks exact-prefix prediction agreement and finite backward gradients for ratios 1/2/3 in float32 and BF16. CPU workflow tests generate their own tiny data locally and do not require downloads.
 
-## Benchmark smoke run
+GitHub Actions is configured to run the suite on Python 3.11/CPU PyTorch. That configuration has not yet been executed remotely. Single-GPU eager BF16 training and GPU-memory/timing measurements were exercised by the actual experiments. Compilation and multi-GPU DDP remain unvalidated.
 
-The committed [CPU smoke report](../results/smoke_cpu.json) comes from this deliberately tiny run:
+## Actual GPU experiments
+
+See [the measured report](experiments.md), [algebraic proofs](proofs.md), and these artifacts:
+
+- [Nine trained-model runs](../results/ablation_cuda.json), three variants and three seeds, 1,000 updates per run.
+- [Sixty-nine warmed shape-study cases](../results/scaling_cuda.json), contexts 128/512/1024, multiple merge depths, and isolated singleton controls.
+- [Numerical/runtime witnesses](../results/property_evidence.json).
+
+Data preparation splits raw text before tokenization into separate train/validation/test segments. Final test targets are identical across compared models and are not used for gradient updates, monitoring, checkpoint selection, or hyperparameter tuning during these runs. The results measure sampled held-out predictions, not every token of the test corpus or general language understanding.
+
+## CPU benchmark smoke run
+
+The [CPU smoke report](../results/smoke_cpu.json) verifies that the current three-way runner, final test metrics, timers, plan-hash checks, and JSON output work without a GPU:
 
 ```bash
-OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python -B nanoGPT/bench_ablation.py --data-dir=nanoGPT/data/shakespeare --device=cpu --block-size=8 --batch-size=2 --max-iters=3 --warmup-iters=1 --eval-interval=3 --eval-iters=2 --n-layer=3 --n-head=2 --n-embd=16 --merge-layer=1 --generation-tokens=4 --generation-repeats=1 --output=results/smoke_cpu.json
+python nanoGPT/data/shakespeare_threeway/prepare.py
+OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python nanoGPT/bench_ablation.py --device=cpu --block-size=8 --batch-size=2 --max-iters=3 --warmup-iters=1 --lr-warmup-iters=1 --eval-interval=3 --eval-iters=2 --test-iters=2 --prefix-iters=2 --n-layer=3 --n-head=2 --n-embd=16 --merge-layer=1 --generation-tokens=4 --generation-repeats=1 --seeds=1337 --output=results/smoke_cpu.json
 ```
 
-Prepare the BPE dataset first with `cd nanoGPT && python data/shakespeare/prepare.py`, then return to the project root for the command above.
+This deliberately tiny run is not evidence of convergence or comparative performance. Its VRAM metrics are null. Dataset hashes are included in the report.
 
-This checks that all three experiment paths, matched validation metrics, independent training/generation timers, and JSON reporting work. Three updates, two validation batches, and four generated tokens are **not sufficient** to assess quality, speed advantages, or convergence. CPU reports leave VRAM metrics null. Dataset hashes are included to identify the exact token streams.
+## Remaining scope
 
-## Controlled experiments still needed
-
-Run longer training with several seeds, multiple context lengths, and the intended GPU. Report both input-token and supervised-prediction budgets, wall-clock time, final-prefix quality across window remainders, and generation speed. Add a scaled-average control to isolate residual amplification from learned unequal weighting. Persistent KV caching requires a separate implementation and correctness study.
+Broader quality claims require additional datasets and tasks, widths, seeds, GPUs, and matched-supervision budgets. Explaining the residual mechanism requires controls that separate scale, constrained weighting, and singleton handling. The requested three-way experiment does not isolate those factors. Persistent KV caching requires a separate implementation and correctness study. The existing measurements already show that generation speedup and a lower full mixed-training memory maximum cannot be claimed for this setup.

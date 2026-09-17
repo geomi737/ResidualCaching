@@ -1,6 +1,6 @@
 """
-Прототип генеративной языковой модели с буферным сжатием (Sliding Window Token Merger)
-и Residual Cache Amplification.
+Generative LM prototype with sliding-window token merging
+and residual-sum amplification.
 
 HISTORICAL PROTOTYPE: unmerging leaks future tokens into earlier predictions.
 Do not use its training loss as evidence of causal LM quality. The supported
@@ -71,7 +71,7 @@ class TransformerBlock(nn.Module):
 # ============================================================================
 
 class WindowTokenMerger(nn.Module):
-    """Сжимает группы токенов размера window_size в один вектор."""
+    """Compress window_size token groups into a single vector."""
 
     def __init__(self, d_model, window_size=2):
         super().__init__()
@@ -83,30 +83,30 @@ class WindowTokenMerger(nn.Module):
         assert L % self.window_size == 0
         num_windows = L // self.window_size
 
-        # Сворачиваем в форму (B, num_windows, window_size, D)
+        # Reshape to (B, num_windows, window_size, D)
         x_reshaped = x.view(B, num_windows, self.window_size, D)
         weights = F.softmax(self.merge_weight, dim=0).view(1, 1, self.window_size, 1)
 
-        # 1. Взвешенный сжатый токен:
+        # 1. Weighted compressed token:
         merged = (x_reshaped * weights).sum(dim=2)  # (B, num_windows, D)
 
-        # 2. Сумма участвовавших оригиналов для Residual Cache:
+        # 2. Sum of constituent vectors for the residual path:
         group_sums = x_reshaped.sum(dim=2)  # (B, num_windows, D)
 
-        # Также возвращаем сами исходные кусочки для по-позиционного unmerging
+        # Also return original pieces for per-position unmerging
         return merged, group_sums, x_reshaped
 
 
 # ============================================================================
-# 3. Hourglass Generative Model с Residual Amplification
+# 3. Hourglass Generative Model with Residual Amplification
 # ============================================================================
 
 class GenerativeMergedLM(nn.Module):
     """
-    Иерархическая генеративная модель:
-    - Слой 1 (L): локальная обработка
-    - Сжатие N -> 1 (L/N): глубокие слои думают на сжатом контексте!
-    - Разжатие 1 -> N с прибавлением Residual Cache: генерация точных токенов
+    Hierarchical generative model:
+    - Block 1 (L): full-resolution processing
+    - Compression N-to-1 (L/N): deep blocks process compressed context
+    - Unmerging 1-to-N plus per-position residuals (not causally safe)
     """
 
     def __init__(self, vocab_size, d_model=64, n_heads=4, d_ff=128, n_latent_layers=3, window_size=2):
@@ -118,19 +118,19 @@ class GenerativeMergedLM(nn.Module):
         self.tok_emb = nn.Embedding(vocab_size, d_model)
         self.pos_emb = nn.Embedding(512, d_model)
 
-        # Входной блок высокого разрешения (размер L)
+        # Full-resolution input block (length L)
         self.in_block = TransformerBlock(d_model, n_heads, d_ff)
 
-        # Модуль сжатия
+        # Compression module
         self.merger = WindowTokenMerger(d_model, window_size)
 
-        # Глубокие скрытые блоки (работают на сжатой в window_size раз длине!)
+        # Deep latent blocks operate on length L/window_size
         self.latent_blocks = nn.ModuleList([
             TransformerBlock(d_model, n_heads, d_ff)
             for _ in range(n_latent_layers)
         ])
 
-        # Выходной блок разжатия (обратно размер L) с проекцией и Residual Cache
+        # Full-resolution output block after expansion and residual addition
         self.out_block = TransformerBlock(d_model, n_heads, d_ff)
         self.head = nn.Linear(d_model, vocab_size)
 
@@ -145,27 +145,27 @@ class GenerativeMergedLM(nn.Module):
         pos = torch.arange(0, L, device=idx.device).unsqueeze(0)
         x = self.tok_emb(idx) + self.pos_emb(pos)
 
-        # 1. Локальная обработка
+        # 1. Full-resolution processing
         x = self.in_block(x)
 
-        # 2. Сжатие в окно window_size (L -> L / window_size)
+        # 2. Compress window_size tokens (L -> L/window_size)
         merged, group_residual_sum, orig_pieces = self.merger(x)
 
-        # 3. Глубокие слои на сжатом представлении + добавление Residual Cache
-        # Твоя идея: прибавляем Residual Cache к сжатому вектору (Residual Amplification)
+        # 3. Deep blocks on compressed representations plus the residual sum
+        # Add the constituent sum to the compressed vector (residual amplification)
         latent = merged + group_residual_sum
         for block in self.latent_blocks:
             latent = block(latent)
 
-        # 4. Развертка (Unmerging): дублируем сжатый контекст по размеру окна
-        # и добавляем оригинальные residual кусочки каждого токена
+        # 4. Unmerging: duplicate compressed context across the window
+        # and add the original per-token residual pieces
         num_windows = L // self.window_size
         # (B, num_windows, 1, D) -> (B, num_windows, window_size, D)
         expanded_latent = latent.unsqueeze(2).repeat(1, 1, self.window_size, 1)
-        unmerged = expanded_latent + orig_pieces  # Точное восстановление индивидуальности токенов!
+        unmerged = expanded_latent + orig_pieces  # Per-position residuals do not eliminate future-token leakage
         unmerged = unmerged.view(B, L, self.d_model)
 
-        # 5. Выходной блок и логиты
+        # 5. Output block and logits
         out = self.out_block(unmerged)
         logits = self.head(out)
 
@@ -176,13 +176,13 @@ class GenerativeMergedLM(nn.Module):
 
 
 # ============================================================================
-# 4. Демонстрация генерации с буфером (Sliding Buffer Merge)
+# 4. Sliding-buffer generation demonstration
 # ============================================================================
 
 def generate_with_buffer_demo(model, prompt_text, char2idx, idx2char, max_new_tokens=30, window_size=2):
     model.eval()
-    print(f"\n--- Генерация с буферным сжатием (Window size = {window_size}) ---")
-    print(f"Начальный промпт: '{prompt_text}'")
+    print(f"\n--- Generation with sliding-buffer compression (Window size = {window_size}) ---")
+    print(f"Initial prompt: '{prompt_text}'")
     print("=" * 65)
 
     input_ids = [char2idx[c] for c in prompt_text]
@@ -201,20 +201,20 @@ def generate_with_buffer_demo(model, prompt_text, char2idx, idx2char, max_new_to
         generated_ids.append(next_id)
         buffer.append(next_char)
 
-        # Логика буфера
+        # Buffer bookkeeping
         if len(buffer) < window_size:
-            print(f"Шаг {step:2d}: Токен '{next_char}' -> Буфер не полон: {buffer} (ожидает {window_size - len(buffer)} токен)")
+            print(f"Step {step:2d}: Token '{next_char}' -> Buffer is incomplete: {buffer} (waiting for {window_size - len(buffer)} token(s))")
         else:
-            print(f"Шаг {step:2d}: Токен '{next_char}' -> БУФЕР ЗАПОЛНЕН: {buffer} -> ⚡ Сжатие {window_size} токенов в 1 сжатый вектор!")
+            print(f"Step {step:2d}: Token '{next_char}' -> BUFFER COMPLETE: {buffer} -> ⚡ Compress {window_size} tokens into one vector!")
             buffer.clear()
 
     full_text = "".join([idx2char[i] for i in generated_ids])
     print("=" * 65)
-    print(f"Итоговый сгенерированный текст:\n'{full_text}'\n")
+    print(f"Final generated text:\n'{full_text}'\n")
 
 
 # ============================================================================
-# 5. Обучение на коротком тексте и запуск
+# 5. Train on a short text and run generation
 # ============================================================================
 
 def main():
@@ -230,7 +230,7 @@ def main():
     idx2char = {i: c for i, c in enumerate(chars)}
 
     data = torch.tensor([char2idx[c] for c in text], dtype=torch.long)
-    print(f"Датасет: {len(text)} символов, размер словаря: {vocab_size}")
+    print(f"Dataset: {len(text)} characters, vocabulary size: {vocab_size}")
 
     model = GenerativeMergedLM(
         vocab_size=vocab_size,
@@ -245,10 +245,10 @@ def main():
     seq_len = 32
     batch_size = 32
 
-    print("Обучение генеративной модели...")
+    print("Training the generative model...")
     model.train()
     for ep in range(1, 151):
-        # Случайные батчи
+        # Random training batches
         ix = torch.randint(len(data) - seq_len - 1, (batch_size,))
         x = torch.stack([data[i:i + seq_len] for i in ix]).to(device)
         y = torch.stack([data[i + 1:i + seq_len + 1] for i in ix]).to(device)
@@ -261,9 +261,9 @@ def main():
         optimizer.step()
 
         if ep % 30 == 0:
-            print(f"  Эпоха {ep:3d}/150 | Loss: {loss.item():.4f}")
+            print(f"  Epoch {ep:3d}/150 | Loss: {loss.item():.4f}")
 
-    # Запуск генерации с демонстрацией работы окна/буфера
+    # Generate with window/buffer bookkeeping displayed
     generate_with_buffer_demo(model, "The quick ", char2idx, idx2char, max_new_tokens=24, window_size=2)
 
 
