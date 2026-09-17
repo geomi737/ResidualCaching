@@ -1,0 +1,5 @@
+torch>=2.0
+numpy
+tiktoken
+requests
+# Optional: transformers (baseline GPT-2 import), datasets (OpenWebText), wandb.

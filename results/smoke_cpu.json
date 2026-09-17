@@ -1,0 +1,120 @@
+{
+  "config": {
+    "data_dir": "nanoGPT/data/shakespeare",
+    "device": "cpu",
+    "block_size": 8,
+    "batch_size": 2,
+    "max_iters": 3,
+    "warmup_iters": 1,
+    "eval_interval": 3,
+    "eval_iters": 2,
+    "n_layer": 3,
+    "n_head": 2,
+    "n_embd": 16,
+    "merge_ratio": 2,
+    "merge_layer": 1,
+    "vocab_size": 50304,
+    "seed": 1337,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "unmerged_prob": 0.1,
+    "output": "results/smoke_cpu.json",
+    "generation_tokens": 4,
+    "generation_repeats": 1
+  },
+  "environment": {
+    "torch": "2.14.0",
+    "device": "cpu",
+    "gpu": null
+  },
+  "dataset_sha256": {
+    "train": "502a2bdc8210d1ac5d5674867cb74467dd31db575d25cf6dbb08c8bdbea8680f",
+    "val": "68a53422394c26a655ebe641f5c6f49888e8f4e45fe5d6f02abda63ba3ebd65b"
+  },
+  "notes": [
+    "Boundary and last-prefix validation targets are shared across models.",
+    "Last-prefix validation samples lengths uniformly from 1 to block-size.",
+    "Training throughput excludes validation, batch transfer, and warmup iterations.",
+    "Peak allocated VRAM includes model, optimizer, training, and validation after warmup.",
+    "Training predictions per input batch differ between architectures.",
+    "Generation has its own warmed-up timer and uses no persistent KV cache.",
+    "Generation peak VRAM includes model and inference allocations, after freeing the optimizer."
+  ],
+  "results": [
+    {
+      "name": "Baseline nanoGPT",
+      "merge_ratio": 1,
+      "use_residual_cache": false,
+      "step": 3,
+      "boundary_loss": 10.823020935058594,
+      "last_prefix_loss": 10.753771781921387,
+      "training_time_s": 0.026101925999682862,
+      "input_tokens_per_s": 1149.3404739697944,
+      "predictions_per_s": 1149.3404739697944,
+      "measured_input_tokens": 30,
+      "measured_predictions": 30,
+      "peak_allocated_vram_mb": null,
+      "history": [
+        {
+          "step": 3,
+          "boundary_loss": 10.823020935058594,
+          "last_prefix_loss": 10.753771781921387
+        }
+      ],
+      "generation_time_s": 0.007822902000043541,
+      "generation_tokens_per_s": 511.3192009790915,
+      "generation_prompt_length": 8,
+      "generation_peak_allocated_vram_mb": null
+    },
+    {
+      "name": "Merged + residual sum",
+      "merge_ratio": 2,
+      "use_residual_cache": true,
+      "step": 3,
+      "boundary_loss": 10.840699877057757,
+      "last_prefix_loss": 10.796175479888916,
+      "training_time_s": 0.024822772000334226,
+      "input_tokens_per_s": 1208.5676813047337,
+      "predictions_per_s": 966.854145043787,
+      "measured_input_tokens": 30,
+      "measured_predictions": 24,
+      "peak_allocated_vram_mb": null,
+      "history": [
+        {
+          "step": 3,
+          "boundary_loss": 10.840699877057757,
+          "last_prefix_loss": 10.796175479888916
+        }
+      ],
+      "generation_time_s": 0.007511191000958206,
+      "generation_tokens_per_s": 532.5387144981026,
+      "generation_prompt_length": 8,
+      "generation_peak_allocated_vram_mb": null
+    },
+    {
+      "name": "Merged without residual sum",
+      "merge_ratio": 2,
+      "use_residual_cache": false,
+      "step": 3,
+      "boundary_loss": 10.8323974609375,
+      "last_prefix_loss": 10.796859741210938,
+      "training_time_s": 0.02502464300050633,
+      "input_tokens_per_s": 1198.8183008002552,
+      "predictions_per_s": 959.0546406402042,
+      "measured_input_tokens": 30,
+      "measured_predictions": 24,
+      "peak_allocated_vram_mb": null,
+      "history": [
+        {
+          "step": 3,
+          "boundary_loss": 10.8323974609375,
+          "last_prefix_loss": 10.796859741210938
+        }
+      ],
+      "generation_time_s": 0.007444321001457865,
+      "generation_tokens_per_s": 537.3223426578,
+      "generation_prompt_length": 8,
+      "generation_peak_allocated_vram_mb": null
+    }
+  ]
+}
