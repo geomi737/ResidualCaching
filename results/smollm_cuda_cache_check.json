@@ -1,0 +1,50 @@
+[
+  {
+    "variant": "baseline",
+    "dtype": "torch.float32",
+    "comparisons": 8,
+    "max_absolute_logit_error": 2.384185791015625e-05,
+    "max_kl_full_to_cached": 1.701650802488075e-07,
+    "top1_agreements": 8
+  },
+  {
+    "variant": "baseline",
+    "dtype": "torch.bfloat16",
+    "comparisons": 8,
+    "max_absolute_logit_error": 0.3125,
+    "max_kl_full_to_cached": 0.0019523255759850144,
+    "top1_agreements": 8
+  },
+  {
+    "variant": "plain",
+    "dtype": "torch.float32",
+    "comparisons": 8,
+    "max_absolute_logit_error": 2.002716064453125e-05,
+    "max_kl_full_to_cached": 1.7307806388089375e-07,
+    "top1_agreements": 8
+  },
+  {
+    "variant": "plain",
+    "dtype": "torch.bfloat16",
+    "comparisons": 8,
+    "max_absolute_logit_error": 0.21875,
+    "max_kl_full_to_cached": 0.001931273378431797,
+    "top1_agreements": 8
+  },
+  {
+    "variant": "residual",
+    "dtype": "torch.float32",
+    "comparisons": 8,
+    "max_absolute_logit_error": 3.579258918762207e-05,
+    "max_kl_full_to_cached": 2.231631697213743e-07,
+    "top1_agreements": 8
+  },
+  {
+    "variant": "residual",
+    "dtype": "torch.bfloat16",
+    "comparisons": 8,
+    "max_absolute_logit_error": 0.375,
+    "max_kl_full_to_cached": 0.0013601386453956366,
+    "top1_agreements": 8
+  }
+]

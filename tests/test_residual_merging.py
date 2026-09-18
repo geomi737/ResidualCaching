@@ -34,9 +34,10 @@ class ResidualMergingTests(unittest.TestCase):
         expected = (groups * weights).sum(2) + groups.sum(2)
         out = merger(x)
         torch.testing.assert_close(out[:, :2], expected)
-        torch.testing.assert_close(out[:, -1], 2 * x[:, -1])
-        torch.testing.assert_close(merger(x, merge_tokens=False), 2 * x)
-        torch.testing.assert_close(merger(x[:, :1]), 2 * x[:, :1])
+        torch.testing.assert_close(out[:, -1], x[:, -1])
+        with self.assertRaises(ValueError):
+            merger(x, merge_tokens=False)
+        torch.testing.assert_close(merger(x[:, :1]), x[:, :1])
         torch.testing.assert_close(merger(x, residual_tail=False)[:, -1], x[:, -1])
         torch.testing.assert_close(merger(x, use_residual_cache=False)[:, :2], (groups * weights).sum(2))
 
@@ -45,7 +46,7 @@ class ResidualMergingTests(unittest.TestCase):
         y = torch.randint(19, (2, 8))
         y[0, 2] = -1
         for ratio in (1, 2, 3):
-            for merge_tokens in (True, False):
+            for merge_tokens in (True,):
                 model = self.model(ratio)
                 logits, loss = model(x, y, merge_tokens=merge_tokens)
                 indices = boundary_target_indices(8, ratio if merge_tokens else 1)
@@ -63,7 +64,7 @@ class ResidualMergingTests(unittest.TestCase):
         for ratio in (1, 2, 3):
             for cache in (False, True):
                 model = self.model(ratio, use_residual_cache=cache)
-                for merge_tokens in (True, False):
+                for merge_tokens in (True,):
                     with torch.no_grad():
                         logits, _ = model(x, y, merge_tokens=merge_tokens)
                         endpoints = boundary_target_indices(11, ratio if merge_tokens else 1)
@@ -112,6 +113,10 @@ class ResidualMergingTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             GPTConfig(n_layer=2, merge_ratio=2, merge_layer=2)
         model = self.model()
+        with self.assertRaises(ValueError):
+            model(torch.zeros(1, 2, dtype=torch.long), merge_tokens=False)
+        with self.assertRaises(ValueError):
+            GPTConfig(residual_tail=True)
         with self.assertRaises(ValueError):
             model(torch.empty(1, 0, dtype=torch.long))
         with self.assertRaises(ValueError):

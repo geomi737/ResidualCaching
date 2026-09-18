@@ -1,0 +1,32 @@
+{
+  "purpose": "Hardware feasibility only; random tokens are not a quality evaluation.",
+  "model": "models/SmolLM2-135M",
+  "parameters": 134515008,
+  "gpu": "NVIDIA GeForce RTX 4060",
+  "torch": "2.14.0",
+  "transformers": "4.57.6",
+  "parameter_dtype": "float32",
+  "autocast": "bfloat16",
+  "optimizer": "AdamW, float32 states, foreach=False",
+  "batch_size": 1,
+  "sequence_length": 512,
+  "gradient_checkpointing": false,
+  "peak_allocated_mib": 2618.5029296875,
+  "peak_reserved_mib": 2804.0,
+  "device_total_mib": 7880.25,
+  "input_tokens_per_second": 4680.200633794203,
+  "step_seconds": [
+    0.5557048289992963,
+    0.11790945899883809,
+    0.10304314700078976,
+    0.10413719300049706,
+    0.11249827900064702
+  ],
+  "random_input_losses_not_quality": [
+    12.508909225463867,
+    12.498106956481934,
+    12.480212211608887,
+    12.468180656433105,
+    12.413925170898438
+  ]
+}

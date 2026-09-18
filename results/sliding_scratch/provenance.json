@@ -1,0 +1,16 @@
+{
+  "experiment": "sliding-scratch-five-variants",
+  "recorded_at": "2026-09-18",
+  "initialization": "random; no pretrained model weights loaded",
+  "gpu": "NVIDIA GeForce RTX 4060",
+  "raw_results_sha256": "bfb6d8530b4e0156b52f55204fdab2c75984d1c2a86e539793ccdba4c2469c64",
+  "dataset_manifest_sha256": "c24a3f7fe7d16a160f2048d79a05280486a04d215036ebadbc60d71f377d14cb",
+  "raw_results_preserved_byte_for_byte": true,
+  "code_entry_point": "experiments/smollm/train_sliding.py",
+  "notes": [
+    "One seed; 1500 updates per variant.",
+    "Run config, base hashes, batch hashes, data hashes and full per-step measurements are in seed11.json.",
+    "Dataset manifest note was inherited from an earlier adaptation run; the recorded experiment was from scratch.",
+    "No raw corpus, pretrained weights or checkpoints are redistributed."
+  ]
+}

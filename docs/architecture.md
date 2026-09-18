@@ -1,5 +1,22 @@
 # Architecture and open questions
 
+## Active sliding-training protocol
+
+The current scratch experiment uses dense causal overlapping pairs during
+training and disjoint compressed windows during inference. Sliding + R is the
+selected direction; baseline and Sliding + R are the default new comparisons.
+Each dense training position uses only the previous/current contextual states
+and predicts its next token. Training length is preserved; inference compresses
+completed windows. See the [full five-variant protocol](sliding-merging-experiment.md).
+
+The sections below describe the shared **disjoint** compression path and the
+earlier nanoGPT implementation. Their boundary-only training loss does not
+apply to dense sliding training. Standard Transformer residual connections,
+additional constituent-sum aggregation, and persistent KV caches are separate
+mechanisms. The current scratch adapter keeps only completed-window K/V in the
+persistent deep cache; singleton computations use temporary cache records.
+
+
 ## One-way causal compression
 
 Let the original sequence have length `T`, hidden width `D`, and merge ratio `R`. The first `merge_layer` blocks use causal attention at full length. They produce contextual vectors `x[t]` which contain information only from positions `<=t`.
@@ -11,13 +28,13 @@ a = softmax(w)
 C[k] = Σᵢ a[i] x[kR+i] + Σᵢ x[kR+i]
 ```
 
-The residual sum is a sum of **contextual hidden states**, not a separate sum of raw token embeddings. Unfinished windows are kept as separate singleton positions. With residuals enabled and `residual_tail=True`, each singleton is `2x`; with residuals disabled it is `x`. The shorter sequence length is:
+The residual sum is a sum of **contextual hidden states**, not a separate sum of raw token embeddings. Unfinished windows are kept as separate singleton positions. Each incomplete tail position is passed through unchanged, with or without residual aggregation. Compression is always applied to complete windows from left to right. The shorter sequence length is:
 
 ```text
 S = floor(T/R) + (T mod R)
 ```
 
-Deep blocks use ordinary causal attention over this sequence. There is no unmerge, no full-resolution output block, and no extra positional embedding after merging. Original positional information is carried by the contextual vectors.
+Deep blocks use ordinary causal attention over this sequence. There is no unmerge, no full-resolution output block, and no full-length reconstruction. nanoGPT carries its learned original positions in the contextual vectors. The SmolLM2 adapter instead applies RoPE using original window-end positions in deep blocks, preserving the original position of an untouched tail.
 
 For `R=2`:
 
@@ -43,7 +60,7 @@ The historical hourglass prototype copies a complete window back onto its earlie
 
 The length sampler covers every remainder by choosing from `max(1,B−R+1)…B`. For `R=2` and even `B`, this alternates even and odd lengths. For larger `R`, it trains longer singleton tails as well.
 
-Additionally, a fraction `unmerged_prob` of training batches use `merge_tokens=False`. The early blocks and merge interface remain present, but every position becomes a singleton representation; deep blocks receive an uncompressed sequence. Targets then cover all original positions. This is a batch-level mixture, not arbitrary selective merging inside the history.
+The former 10% singleton-only bypass has been removed. Every merged forward compresses all complete windows, even on odd-length inputs. The new paired SmolLM2 runner uses the same input sequences and batch sizes as the baseline. Equal input batches remain valid for ordinary backpropagation; only the output positions and target selection change.
 
 This addresses training coverage: tensor compatibility alone does not imply that deep layers have learned to predict from every representation type. `merge_ratio=1` is a separate baseline path and does not apply the singleton residual scaling.
 
@@ -51,15 +68,15 @@ This addresses training coverage: tensor compatibility alone does not imply that
 
 - `model(idx, targets)` returns all valid prediction logits and boundary loss.
 - `model(idx)` returns only the last prediction, shaped `(B,1,V)`, and `None` loss.
-- `model(idx, targets, merge_tokens=False)` returns singleton-only predictions in the merged architecture.
+- `merge_tokens=False`, `residual_tail=True`, and nonzero `unmerged_prob` are rejected in the current nanoGPT entry points. The SmolLM2 adapter has no such bypass or scaling options.
 - `merge_layer` means the number of early blocks, and must satisfy `0<=merge_layer<n_layer` when merging is active. Invalid settings fail instead of silently moving the compression boundary.
-- Training checkpoints persist all architecture flags. Resume and sampling preserve the old pass-through singleton convention for checkpoints without `residual_tail`.
+- Training checkpoints persist architecture flags. Old doubled-tail checkpoints must be used with historical revision `3edb3c5`.
 - The training entry point supports merged models from scratch and resume. Upstream pretrained GPT-2 import remains baseline-only.
-- DDP enables unused-parameter detection for merged models because singleton-only batches do not use the merge weights. Single-GPU execution and float32/BF16 correctness have been validated on RTX 4060; compilation and multi-GPU DDP have not.
+- DDP enables unused-parameter detection for merged models because sequences shorter than a complete window do not use the merge weights. Single-GPU execution and float32/BF16 correctness have been validated on RTX 4060; compilation and multi-GPU DDP have not.
 
 ## What residual caching does and does not mean
 
-The implementation adds the sum once at compression. It does not retain each constituent vector, perform content-dependent routing, or retain a cache across generation steps. Calling it an implicit memory slot describes the aggregated residual path.
+The implementation adds the sum once at compression. It does not retain each constituent vector, perform content-dependent routing, or itself retain a cache across generation steps. Calling it an implicit memory slot describes the aggregated residual path. The SmolLM2 adapter additionally has a conventional persistent KV cache, which is a separate mechanism.
 
 If `a[i]=1/R`, then:
 
@@ -75,6 +92,6 @@ For any learned weights, define `q[i]=(1+a[i])/(R+1)`: the operator is exactly `
 
 Only deeper blocks process `S` rather than `T` positions. Their projection and MLP work scales roughly with `S`, and the dense attention pair count scales with `S²`. This does not imply an overall twofold speedup: early blocks, vocabulary projections, runtime overhead, and hardware utilization also contribute. Flash attention changes how attention memory is materialized.
 
-Generation currently recomputes the cropped prefix at every step. Implementing a persistent KV cache requires explicit handling of the transition from singleton tails to a completed window: temporary tail states must be removed or replaced consistently in every deep layer. Prefix cropping also resets original positional indices and window grouping. That is future work, not an implemented feature in this release.
+nanoGPT generation recomputes the cropped prefix at every step. The SmolLM2 adapter caches original-resolution early-layer keys/values and compressed deep-layer keys/values. An incomplete tail is provisional: when its partner arrives, every deep layer removes its tail cache entry and appends the completed merged window. Its pre-merge hidden state is retained until then. On context cropping, the adapter rebuilds the cache, resetting relative positions and window grouping consistently. Tests compare this path against full-prefix recomputation. Cached streaming currently supports R=2 and unpadded equal-length batches only.
 
 The benchmark reports matched held-out boundary loss/accuracy and final-prefix loss/accuracy with balanced near-block-size lengths covering all remainders. Neither is labeled as full-sequence perplexity. It measures training and generation separately, checks paired initial weights/data plans, and records allocated/reserved memory. Training compute comparisons must also account for different supervised-prediction counts, singleton-batch proportions, warmup, and validation overhead.

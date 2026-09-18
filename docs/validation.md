@@ -1,40 +1,79 @@
 # Validation and reproduction
 
-## Correctness and workflow suite
+## Current correctness suite
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-**Twelve tests passed with real CUDA access** on RTX 4060, Python 3.14.7, PyTorch 2.14.0/CUDA 13.3. In the restricted execution environment eleven pass and the GPU test is skipped, because those restrictions hide the GPU. The actual CUDA runs used execution outside those restrictions.
+The current suite has **26 test cases**. After repository organization, 22 of the
+23 original/adapter cases passed on CPU and one CUDA-only case skipped under
+restricted execution. Three new artifact-integrity cases passed separately.
+The skipped CUDA causality/backward case then passed on RTX 4060 outside the
+restricted environment. Thus all 26 cases were exercised across CPU and GPU.
+No remote CI run is claimed.
 
-The suite covers shifted-target alignment for ratios 1/2/3 and short/multi-token tails; residual and singleton formulas; padding-aware loss; finite gradients; every boundary prediction matching its exact causal prefix; zero future-input gradients; last-position-only inference projection; cropping and generation; invalid inputs; real singleton training, merged resume, and sampling; independent collision/scaling/recomputation witnesses; and the correctness of held-out top-1 accuracy.
+Coverage includes:
 
-The GPU test checks exact-prefix prediction agreement and finite backward gradients for ratios 1/2/3 in float32 and BF16. CPU workflow tests generate their own tiny data locally and do not require downloads.
+- nanoGPT shifted-target selection for R=1/2/3, short/multi-position tails,
+  aggregation formulas, loss and padding, no future gradients, generation,
+  checkpoint resume and sampling.
+- Llama baseline equivalence to native Hugging Face logits/loss, contextual
+  pair formulas, gradients, causal prefix equivalence, and persistent caching.
+- Sliding weighted/residual pair formulas without recursive aggregation,
+  future independence, dense causal-prefix agreement, and mode dispatch.
+- Cached/full-prefix agreement for both parities, singleton-only prefixes,
+  multiple merge boundaries, generation and context cropping. Current deep
+  caches persist completed windows only.
+- Preserved GPU artifact checksums, identical initialization/data plans,
+  matching dataset token hashes, equal-input/different-supervision budgets,
+  matched evaluation target counts, and actual per-layer KV cache lengths.
 
-GitHub Actions is configured to run the suite on Python 3.11/CPU PyTorch. That configuration has not yet been executed remotely. Single-GPU eager BF16 training and GPU-memory/timing measurements were exercised by the actual experiments. Compilation and multi-GPU DDP remain unvalidated.
+GitHub Actions runs CPU correctness on Python 3.11 with Transformers 4.57.6.
+The repaired adapter import now runs SmolLM tests rather than accidentally
+skipping them through an obsolete module path. Tests require no corpus download.
+Compilation, padded/variable-length cache batches, ratios beyond R=2 for the
+current Llama cache, and multi-GPU training remain outside the verified scope.
 
-## Actual GPU experiments
+## Current scratch evidence
 
-See [the measured report](experiments.md), [algebraic proofs](proofs.md), and these artifacts:
+See the [full protocol](sliding-merging-experiment.md) and
+[result index](../results/README.md). Exact evidence is preserved in
+[seed11.json](../results/sliding_scratch/seed11.json), with checksums in
+[provenance.json](../results/sliding_scratch/provenance.json).
+Five models were trained on actual WikiText-2 text from random initialization
+on RTX 4060, 1,500 updates each. Initial weights and data/input plans are paired.
+Test evaluates 65,536 common boundary targets and 512 final-prefix targets.
 
-- [Nine trained-model runs](../results/ablation_cuda.json), three variants and three seeds, 1,000 updates per run.
-- [Sixty-nine warmed shape-study cases](../results/scaling_cuda.json), contexts 128/512/1024, multiple merge depths, and isolated singleton controls.
-- [Numerical/runtime witnesses](../results/property_evidence.json).
-
-Data preparation splits raw text before tokenization into separate train/validation/test segments. Final test targets are identical across compared models and are not used for gradient updates, monitoring, checkpoint selection, or hyperparameter tuning during these runs. The results measure sampled held-out predictions, not every token of the test corpus or general language understanding.
-
-## CPU benchmark smoke run
-
-The [CPU smoke report](../results/smoke_cpu.json) verifies that the current three-way runner, final test metrics, timers, plan-hash checks, and JSON output work without a GPU:
+Recreate English metric tables and the three PNG/SVG figure sets:
 
 ```bash
-python nanoGPT/data/shakespeare_threeway/prepare.py
-OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python nanoGPT/bench_ablation.py --device=cpu --block-size=8 --batch-size=2 --max-iters=3 --warmup-iters=1 --lr-warmup-iters=1 --eval-interval=3 --eval-iters=2 --test-iters=2 --prefix-iters=2 --n-layer=3 --n-head=2 --n-embd=16 --merge-layer=1 --generation-tokens=4 --generation-repeats=1 --seeds=1337 --output=results/smoke_cpu.json
+python experiments/reporting/export_sliding_analysis.py
+MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_sliding_results.py
 ```
 
-This deliberately tiny run is not evidence of convergence or comparative performance. Its VRAM metrics are null. Dataset hashes are included in the report.
+Figures were visually inspected for readable labels, correct variant ordering,
+units and source values. Raw evidence was copied byte-for-byte, and SHA-256
+checks verify it. Published Markdown links resolve locally. Corpus text, token
+binaries, downloaded model assets and checkpoints remain excluded from Git.
 
-## Remaining scope
+## Earlier evidence
 
-Broader quality claims require additional datasets and tasks, widths, seeds, GPUs, and matched-supervision budgets. Explaining the residual mechanism requires controls that separate scale, constrained weighting, and singleton handling. The requested three-way experiment does not isolate those factors. Persistent KV caching requires a separate implementation and correctness study. The existing measurements already show that generation speedup and a lower full mixed-training memory maximum cannot be claimed for this setup.
+The [nanoGPT report](experiments.md) contains separately labeled historical
+measurements: nine trained runs across three seeds, 69 random-input shape
+cases, and numerical witnesses. Its retired compression-bypass/doubled-tail
+protocol does not describe the current scratch pilot. The
+[pretrained SmolLM2 page](smollm-next-experiment.md) records earlier feasibility
+and adaptation work, not new scratch quality.
+
+`results/smoke_cpu.json` and local synthetic GPU smoke runs verify execution
+only. Random-input loss must not be interpreted as language quality.
+
+## Limits
+
+One seed and short sequential inference timers do not establish significance
+of small variant differences. Top-1 accuracy is not a reasoning or preference
+benchmark; cross-entropy and final-prefix behavior are reported alongside it.
+Evaluation windows can overlap. The post-test choice of Sliding + R is an
+exploratory research direction to confirm on fresh targets. No lossless
+compression, universal quality win, or production-readiness claim is made.

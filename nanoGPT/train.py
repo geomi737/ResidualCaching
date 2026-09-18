@@ -60,8 +60,8 @@ bias = False # do we use bias inside LayerNorm and Linear layers?
 merge_ratio = 1 # >1 enables one-way window compression
 merge_layer = 2 # number of full-resolution blocks before compression
 use_residual_cache = True
-residual_tail = True # singleton representation x + x
-unmerged_prob = 0.1 # fraction of singleton-only batches in merged training
+residual_tail = False # incomplete tails pass through unchanged
+unmerged_prob = 0.0 # retained only to reject obsolete bypass configurations
 # adamw optimizer
 learning_rate = 6e-4 # max learning rate
 max_iters = 600000 # total number of training iterations
@@ -84,8 +84,8 @@ compile = True # use PyTorch 2.0 to compile the model to be faster
 config_keys = [k for k,v in globals().items() if not k.startswith('_') and isinstance(v, (int, float, bool, str))]
 exec(open('configurator.py').read()) # overrides from command line or config file
 config = {k: globals()[k] for k in config_keys} # will be useful for logging
-if not 0.0 <= unmerged_prob <= 1.0:
-    raise ValueError('unmerged_prob must be in [0, 1]')
+if unmerged_prob != 0.0:
+    raise ValueError('Compression is mandatory; unmerged_prob must be 0.0')
 # -----------------------------------------------------------------------------
 
 # various inits, derived attributes, I/O setup
@@ -326,8 +326,7 @@ while True:
             # looking at the source of that context manager, it just toggles this variable
             model.require_backward_grad_sync = (micro_step == gradient_accumulation_steps - 1)
         with ctx:
-            merge_tokens = not (model_args['merge_ratio'] > 1 and torch.rand(()).item() < unmerged_prob)
-            logits, loss = model(X, Y, merge_tokens=merge_tokens)
+            logits, loss = model(X, Y)
             loss = loss / gradient_accumulation_steps # scale the loss to account for gradient accumulation
         # immediately async prefetch next batch while model is doing the forward pass on the GPU
         X, Y = get_batch('train')

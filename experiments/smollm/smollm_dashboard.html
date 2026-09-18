@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResidualCaching · SmolLM2 experiment</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,sans-serif;background:#10151d;color:#e8edf4}body{max-width:1320px;margin:36px auto;padding:0 24px}h1{font-size:30px;margin-bottom:8px}p{color:#a9b5c5;line-height:1.5}.badge{font-size:12px;color:#64dfba;letter-spacing:.14em}#summary{background:#1b2635;border:1px solid #334256;padding:20px;border-radius:14px;margin:24px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}.card{background:#17212d;border:1px solid #334256;border-radius:14px;padding:20px}.card h2{font-size:18px;margin-top:0}.muted{color:#9bacbf;font-size:13px}.metrics{display:flex;justify-content:space-between;margin:18px 0;gap:12px}.metric strong{font-size:23px;display:block}.metric span{font-size:12px;color:#a9b5c5}progress{width:100%;accent-color:#64dfba;height:9px}svg{width:100%;height:170px;margin:12px 0}table{border-collapse:collapse;width:100%;font-size:13px}td,th{text-align:left;padding:11px 8px;border-bottom:1px solid #334256;white-space:nowrap}th{color:#9bacbf;font-weight:500}.scroll{overflow:auto}pre{white-space:pre-wrap;font-size:12px;color:#f3a69b}.legend{display:flex;gap:16px;font-size:12px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.note{font-size:13px}a{color:#7dc4ff}#connection{font-size:12px;color:#9bacbf}footer{margin:26px 0}
+</style>
+<div class="badge">LIVE RESEARCH BETA · RTX 4060 · 135M PARAMETERS</div>
+<h1>Always-merged SmolLM2 adaptation</h1>
+<p>Identical input batches. Left-to-right pairs. Untouched singleton tails. Three variants, three seeds.</p>
+<div id="summary">Waiting for the experiment…</div>
+<div class="grid" id="cards"></div>
+<h2>Comparable validation loss</h2>
+<p class="note">Window-boundary targets are identical across variants. Training loss alone is not directly comparable because baseline supervises more positions.</p>
+<div class="legend"><span><i class="dot" style="background:#76b8ff"></i>Baseline</span><span><i class="dot" style="background:#ffbf70"></i>Plain merge</span><span><i class="dot" style="background:#64dfba"></i>Residual merge</span></div>
+<div id="chart"></div>
+<h2>All runs</h2><div class="scroll"><table><thead><tr><th>Variant / seed</th><th>State</th><th>Step</th><th>Train peak MiB</th><th>Input tok/s</th><th>Predictions/s</th><th>Test boundary loss</th><th>Test prefix accuracy</th><th>Cached decode tok/s¹</th></tr></thead><tbody id="rows"></tbody></table></div>
+<footer><p class="note">¹ Prompt length 1024; batch 1. GPU memory is PyTorch allocated memory, not whole-device usage. Test scores appear only after training. Pilot results do not establish general reasoning quality or global method superiority.</p><div id="connection"></div></footer>
+<script>
+const colors={baseline:'#76b8ff',plain:'#ffbf70',residual:'#64dfba'};
+const names={baseline:'Conventional Transformer',plain:'Merging without residual',residual:'Merging + residual sum'};
+const num=(x,d=2)=>Number.isFinite(x)?x.toLocaleString('en-US',{maximumFractionDigits:d,minimumFractionDigits:d}):'—';
+const safe=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function get(path){const r=await fetch(path+'?t='+Date.now(),{cache:'no-store'});return r.ok?r.json():null}
+function chart(runs){
+ const series=runs.filter(Boolean).map(r=>({r,points:[...(r.initial_validation?[{step:0,loss:r.initial_validation.boundary_loss}]:[]),...(r.history||[]).filter(e=>e.validation).map(e=>({step:e.step,loss:e.validation.boundary_loss}))]})).filter(s=>s.points.length);
+ if(!series.length)return '';
+ const vals=series.flatMap(s=>s.points.map(p=>p.loss));const lo=Math.floor(Math.min(...vals)*10)/10,hi=Math.ceil(Math.max(...vals)*10)/10+.01;
+ const max=Math.max(...series.map(s=>s.r.total_steps));const x=n=>45+940*n/max,y=n=>150-125*(n-lo)/(hi-lo);
+ return `<svg viewBox="0 0 1000 180" role="img" aria-label="Validation boundary loss by training step"><text x="0" y="28" fill="#9bacbf" font-size="12">${num(hi)}</text><text x="0" y="153" fill="#9bacbf" font-size="12">${num(lo)}</text><path d="M45 18V150H985" stroke="#334256" fill="none"/>${series.map(s=>`<polyline points="${s.points.map(p=>x(p.step)+','+y(p.loss)).join(' ')}" fill="none" stroke="${colors[s.r.variant]}" stroke-width="2" opacity=".8"/>`).join('')}<text x="45" y="175" fill="#9bacbf" font-size="12">0 updates</text><text x="905" y="175" fill="#9bacbf" font-size="12">${max} updates</text></svg>`;
+}
+async function refresh(){try{
+ const suite=await get('suite.json');if(!suite){document.querySelector('#connection').textContent='Waiting for suite.json';return}
+ const runs=await Promise.all(suite.runs.map(j=>get(j.file)));let done=0,total=0;
+ suite.runs.forEach((j,i)=>{total+=suite.config.steps;done+=runs[i]?.step||0});
+ document.querySelector('#summary').innerHTML=`<strong>${safe(suite.state.toUpperCase())}</strong> · ${suite.completed}/${suite.runs.length} runs complete · ${done}/${total} optimizer updates<progress value="${done}" max="${total}"></progress><span class="muted">${suite.config.length}/ ${suite.config.length-1} input tokens · microbatch ${suite.config.batch_size} · accumulation ${suite.config.accumulation} · merge before block ${suite.config.merge_layer} · automatic refresh every 2 seconds</span>`;
+ document.querySelector('#cards').innerHTML=Object.keys(names).map(v=>{const list=runs.filter(r=>r?.variant===v);const r=list.find(r=>r.state!=='complete')||list.at(-1);return `<section class="card" style="border-top:3px solid ${colors[v]}"><h2>${names[v]}</h2><div class="muted">${r?'Seed '+r.seed+' · '+safe(r.state):'Queued'}</div><div class="metrics"><div class="metric"><strong>${num(r?.train_peak_allocated_mib,0)}</strong><span>training peak MiB</span></div><div class="metric"><strong>${num(r?.input_tokens_per_second,0)}</strong><span>input tokens / second</span></div></div><progress value="${r?.step||0}" max="${suite.config.steps}"></progress><div class="muted">${r?.step||0} / ${suite.config.steps} updates · validation loss ${num(r?.validation?.boundary_loss??r?.initial_validation?.boundary_loss,3)}</div>${r?.error?'<pre>'+safe(r.error)+'</pre>':''}</section>`}).join('');
+ document.querySelector('#chart').innerHTML=chart(runs);
+ document.querySelector('#rows').innerHTML=suite.runs.map((j,i)=>{const r=runs[i];return `<tr><td>${safe(j.variant)} / ${j.seed}</td><td>${safe(r?.state||'queued')}</td><td>${r?.step||0}</td><td>${num(r?.train_peak_allocated_mib,0)}</td><td>${num(r?.input_tokens_per_second,0)}</td><td>${num(r?.supervised_predictions_per_second,0)}</td><td>${num(r?.test?.boundary_loss,3)}</td><td>${r?.test?num(100*r.test.prefix_accuracy)+'%':'—'}</td><td>${num(r?.inference?.find(x=>x.prompt_length===1024)?.cached_decode_tokens_per_second,1)}</td></tr>`}).join('');
+ document.querySelector('#connection').textContent='Updated '+new Date().toLocaleTimeString()+' · Updates are fetched by your browser; no assistant polling is needed.';
+}catch(e){document.querySelector('#connection').textContent='Connection issue: '+e.message}}
+refresh();setInterval(refresh,2000);
+</script></html>

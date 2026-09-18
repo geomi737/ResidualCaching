@@ -46,7 +46,7 @@ def parse_args():
     parser.add_argument('--dropout', type=float, default=0.1)
     parser.add_argument('--lr', type=float, default=1e-3)
     parser.add_argument('--min-lr', type=float, default=1e-4)
-    parser.add_argument('--unmerged-prob', type=float, default=0.1)
+    parser.add_argument('--unmerged-prob', type=float, default=0.0)
     parser.add_argument('--output', type=Path, default=Path('results/ablation.json'))
     parser.add_argument('--checkpoint-dir', type=Path)
     args = parser.parse_args()
@@ -58,8 +58,8 @@ def parse_args():
             parser.error(f'{name} must be positive')
     if not 0 <= args.warmup_iters < args.max_iters:
         parser.error('warmup-iters must be in [0, max-iters)')
-    if args.merge_ratio < 2 or args.block_size < args.merge_ratio or not 0 <= args.unmerged_prob <= 1:
-        parser.error('Require block-size >= merge-ratio >= 2 and unmerged-prob in [0,1]')
+    if args.merge_ratio < 2 or args.block_size < args.merge_ratio or args.unmerged_prob != 0:
+        parser.error('Require block-size >= merge-ratio >= 2 and unmerged-prob = 0 (compression is mandatory)')
     if args.device.startswith('cuda') and not torch.cuda.is_available():
         parser.error('CUDA was requested but is unavailable in this execution environment')
     if args.dtype == 'auto':
@@ -238,7 +238,7 @@ def run(name, ratio, cache, splits, args, seed):
         optimizer.zero_grad(set_to_none=True)
         full_started = time.perf_counter()
         x, y = batch(splits['train'], args, generator, plan_hash=plan_hash)
-        merge_tokens = torch.rand((), generator=mode_generator).item() >= args.unmerged_prob
+        merge_tokens = True
         mode_hash.update(bytes([merge_tokens]))
         singleton_batches += int(not merge_tokens and ratio > 1)
         for group in optimizer.param_groups:

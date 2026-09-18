@@ -2,6 +2,7 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .venv/
+.venv-*/
 venv/
 env/
 .DS_Store
@@ -11,6 +12,7 @@ env/
 .agents/
 .codex/
 models/
+data/smollm/
 *.bin
 *.pkl
 *.pt

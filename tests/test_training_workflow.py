@@ -12,7 +12,7 @@ import torch
 
 
 class TrainingWorkflowTests(unittest.TestCase):
-    def test_singleton_training_merged_resume_and_sampling(self):
+    def test_always_merged_training_resume_and_sampling(self):
         root = Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory(prefix='residual-training-') as directory:
             data = Path(directory) / 'data'
@@ -35,11 +35,11 @@ class TrainingWorkflowTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
                 return result
             run('train.py', common + ['--merge_ratio=3', '--merge_layer=1',
-                                     '--unmerged_prob=1.0', '--max_iters=1'])
+                                     '--unmerged_prob=0.0', '--max_iters=1'])
             checkpoint = torch.load(out / 'ckpt.pt', weights_only=False, map_location='cpu')
             self.assertEqual(checkpoint['iter_num'], 1)
             self.assertEqual(checkpoint['model_args']['merge_ratio'], 3)
-            self.assertTrue(checkpoint['model_args']['residual_tail'])
+            self.assertFalse(checkpoint['model_args']['residual_tail'])
             # Resume without repeating architecture flags: checkpoint must restore them.
             run('train.py', common + ['--init_from=resume', '--unmerged_prob=0.0', '--max_iters=2'])
             resumed = torch.load(out / 'ckpt.pt', weights_only=False, map_location='cpu')

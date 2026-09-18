@@ -65,7 +65,9 @@ def main():
                                   f'{statistics.mean(s["loss"] for s in scores):.3f} | '
                                   f'{statistics.mean(s["accuracy"] for s in scores) * 100:.2f} |')
     speed = summary['merged_residual']['training']['input_tokens_per_s']['mean'] / summary['baseline']['training']['input_tokens_per_s']['mean']
-    text = f'''# Measured results: causal token merging with residual aggregation
+    text = f'''> Historical nanoGPT protocol, revision `3edb3c5`: retired compression bypass and doubled singleton tails. See the [current scratch pilot](sliding-merging-experiment.md).
+
+# Measured results: causal token merging with residual aggregation
 
 These are actual local CUDA measurements, not projected gains. The residual configuration improved held-out quality over plain merging in all three tested seeds, while the classical baseline retained better final-prefix quality. It increased training input throughput by about {speed:.2f}x. Generation acceleration and a lower mixed-training maximum VRAM were not demonstrated.
 
@@ -169,11 +171,15 @@ SDPA selects an implementation according to its inputs and environment; we did n
 python -m pip install -r requirements-experiments.txt
 python nanoGPT/data/shakespeare_threeway/prepare.py
 OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python nanoGPT/bench_ablation.py --device=cuda --max-iters=1000 --seeds 1337 2027 3407 --prefix-iters=128 --test-iters=64 --output=results/ablation_cuda.json
-OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/benchmark_scaling.py --output=results/scaling_cuda.json
-python experiments/verify_properties.py
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/scaling_cuda.json
+python experiments/nanogpt/verify_properties.py
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/scaling_cuda.json
+python experiments/nanogpt/verify_properties.py
 python -m unittest discover -s tests -v
-MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/plot_results.py
-python experiments/write_report.py
+MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_results.py
+python experiments/reporting/write_report.py
+MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_results.py
+python experiments/reporting/write_report.py
 ```
 
 Plotting additionally requires `matplotlib`. GPU access must be available to the process; in the development environment sandbox restrictions hid the GPU, and the actual CUDA runs used execution outside those restrictions. The property checks and CPU entry-point tests do not require GPU access.

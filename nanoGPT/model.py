@@ -136,18 +136,21 @@ class WindowTokenMerger(nn.Module):
         self.merge_ratio = merge_ratio
         self.merge_weight = nn.Parameter(torch.ones(merge_ratio) / merge_ratio)
 
-    def forward(self, x, use_residual_cache=True, merge_tokens=True, residual_tail=True):
+    def forward(self, x, use_residual_cache=True, merge_tokens=True, residual_tail=False):
         # x: (B, T, C)
         B, T, C = x.shape
-        # A singleton follows the same operator: weighted merge x + residual x.
+        if residual_tail:
+            raise ValueError("Tail scaling was retired; use the historical revision for old checkpoints.")
         if not merge_tokens:
-            return 2 * x if use_residual_cache and residual_tail else x
+            raise ValueError("Merged models always compress complete windows.")
+        if self.merge_ratio == 1:
+            return x
         num_full_windows = T // self.merge_ratio
         remainder = T % self.merge_ratio
 
         if num_full_windows == 0:
             # Handle sequences shorter than a complete window
-            return 2 * x if use_residual_cache and residual_tail else x
+            return x
 
         # 1. Completed full windows of the history:
         x_full = x[:, :num_full_windows * self.merge_ratio, :]
@@ -166,8 +169,6 @@ class WindowTokenMerger(nn.Module):
         # 2. Singleton tail of the current incomplete window, if any
         if remainder > 0:
             tail = x[:, num_full_windows * self.merge_ratio:, :]
-            if use_residual_cache and residual_tail:
-                tail = 2 * tail
             out = torch.cat([compressed_tokens, tail], dim=1)
         else:
             out = compressed_tokens
@@ -188,9 +189,11 @@ class GPTConfig:
     merge_ratio: int = 1            # 1 = standard nanoGPT; >1 = N-to-1 compression
     merge_layer: int = 2            # number of full-resolution blocks before compression
     use_residual_cache: bool = True  # add the sum of constituent contextual states
-    residual_tail: bool = True      # singleton: x + residual x; False preserves legacy tails
+    residual_tail: bool = False     # incomplete tails pass through unchanged
 
     def __post_init__(self):
+        if self.residual_tail:
+            raise ValueError("residual_tail=True is historical; current tails pass through unchanged")
         if not isinstance(self.merge_ratio, int) or self.merge_ratio < 1:
             raise ValueError("merge_ratio must be a positive integer")
         if not isinstance(self.n_layer, int) or self.n_layer < 1:
@@ -256,6 +259,8 @@ class GPT(nn.Module):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
     def forward(self, idx, targets=None, merge_tokens=True):
+        if not merge_tokens:
+            raise ValueError("Compression bypass was retired; merged models always compress.")
         device = idx.device
         b, t = idx.size()
         if t == 0:

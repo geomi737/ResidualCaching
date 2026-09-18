@@ -4,5 +4,5 @@ out_dir = 'out-residual-shakespeare'
 merge_ratio = 2
 merge_layer = 2
 use_residual_cache = True
-residual_tail = True
-unmerged_prob = 0.1
+residual_tail = False
+unmerged_prob = 0.0

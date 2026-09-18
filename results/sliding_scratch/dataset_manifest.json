@@ -1,0 +1,33 @@
+{
+  "dataset": "Salesforce/wikitext",
+  "configuration": "wikitext-2-raw-v1",
+  "tokenizer": "HuggingFaceTB/SmolLM2-135M",
+  "tokenizer_revision": "93efa2f097d58c2a74874c7e644dbc9b0cee75a2",
+  "note": "Held out from adaptation only; pretraining contamination is unknown.",
+  "splits": {
+    "test": {
+      "tokens": 302010,
+      "source_sha256": "5f1bea067869d04849c0f975a2b29c4ff47d867f484f5010ea5e861eab246d91",
+      "tokens_sha256": "796e0d25b6566f682615c39e9a5571f438e88d205dc916ca09bb6577cfa39b57",
+      "source_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "article_count_before_dedup": 63,
+      "removed_articles": 1
+    },
+    "validation": {
+      "tokens": 265742,
+      "source_sha256": "204929b7ff9d6184953f867dedb860e40aa69c078fc1e54b3baaa8fb28511c4c",
+      "tokens_sha256": "ac18d260d8454b470fcd48d48a60c49613e07119cae411cb0a9773166b2c2819",
+      "source_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "article_count_before_dedup": 61,
+      "removed_articles": 1
+    },
+    "train": {
+      "tokens": 2543764,
+      "source_sha256": "e83889baabc497075506f91975be5fac0d45c5290b6b20582c8cd1e853d0c9f7",
+      "tokens_sha256": "7fbd4fd22c8ec24550a74ce56b5d60bdc7e144e9273b4e82c10943b1056e09d1",
+      "source_revision": "b08601e04326c79dfdd32d625aee71d232d685c3",
+      "article_count_before_dedup": 630,
+      "removed_articles": 6
+    }
+  }
+}

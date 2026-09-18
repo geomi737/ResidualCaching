@@ -14,6 +14,7 @@ import time
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from nanoGPT.model import GPT, GPTConfig
 
 
@@ -152,9 +153,6 @@ def main():
             for layer in args.merge_layers:
                 cases.extend([('merged_no_residual', 2, False, layer, True),
                               ('merged_residual', 2, True, layer, True)])
-            if length == min(args.contexts):
-                cases.extend([('singleton_no_residual', 2, False, 2, False),
-                              ('singleton_residual', 2, True, 2, False)])
             rotation = seed_index % len(cases)
             for case in cases[rotation:] + cases[:rotation]:
                 report['results'].append(measure(case, length, seed, args))

@@ -6,4 +6,4 @@ authors:
   - name: "geomi737"
 repository-code: "https://github.com/geomi737/ResidualCaching"
 url: "https://github.com/geomi737/ResidualCaching"
-abstract: "Research beta exploring one-way causal token merging and residual-sum aggregation, built on nanoGPT. Development assisted by Gemini and ChatGPT/Codex."
+abstract: "Research beta exploring causal sliding-window training from scratch with disjoint compressed inference and residual-sum aggregation. Experiments use the SmolLM2 configuration/tokenizer, Hugging Face Transformers and WikiText; earlier work builds on nanoGPT. Development assisted by Gemini and ChatGPT/Codex."

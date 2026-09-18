@@ -4,7 +4,7 @@ import unittest
 import torch
 from torch.nn import functional as F
 
-from experiments.verify_properties import collect_evidence
+from experiments.nanogpt.verify_properties import collect_evidence
 from nanoGPT.bench_ablation import average_score, score_logits
 from nanoGPT.model import GPT, GPTConfig, boundary_target_indices
 

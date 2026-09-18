@@ -9,6 +9,11 @@ Copyright (c) 2022 Andrej Karpathy
 https://github.com/karpathy/nanoGPT
 The upstream MIT license is preserved in nanoGPT/LICENSE.
 
+The scratch experiment uses the SmolLM2 configuration/tokenizer and Hugging Face
+Transformers. Credit belongs to the SmolLM2 authors and Hugging Face.
+WikiText credit: Stephen Merity, Caiming Xiong, James Bradbury, Richard Socher,
+Salesforce Research, and Wikipedia contributors. See UPSTREAM.md for revisions.
+
 Project development was assisted by Gemini and ChatGPT, including Codex.
 This is an independent research beta; no endorsement by the upstream author,
 Google, or OpenAI is implied.
