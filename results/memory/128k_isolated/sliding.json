@@ -1,0 +1,327 @@
+{
+  "variant": "sliding",
+  "config": {
+    "variant": "sliding",
+    "checkpoints": "out-sliding-three-seeds",
+    "output": "out-sliding-resources-128k",
+    "seed": 17,
+    "length": 131072,
+    "repeats": 6,
+    "decode_tokens": 128
+  },
+  "state": "complete",
+  "gpu": "NVIDIA GeForce RTX 4060",
+  "torch": "2.14.0",
+  "parameter_mib": 84.39368438720703,
+  "weights_only": {
+    "allocated_mib": 84.40087890625,
+    "reserved_mib": 88.0,
+    "peak_allocated_mib": 84.40087890625,
+    "peak_reserved_mib": 88.0
+  },
+  "samples": [
+    {
+      "mode": "prefill",
+      "repeat": 0,
+      "tokens": 131072,
+      "seconds": 2.5838715529971523,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 0,
+      "tokens": 128,
+      "seconds": 2.8833004379994236,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    },
+    {
+      "mode": "prefill",
+      "repeat": 1,
+      "tokens": 131072,
+      "seconds": 2.5110324199995375,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 1,
+      "tokens": 128,
+      "seconds": 2.7795613299967954,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    },
+    {
+      "mode": "prefill",
+      "repeat": 2,
+      "tokens": 131072,
+      "seconds": 2.4296533039960195,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 2,
+      "tokens": 128,
+      "seconds": 2.734940946997085,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    },
+    {
+      "mode": "prefill",
+      "repeat": 3,
+      "tokens": 131072,
+      "seconds": 2.435763704001147,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 3,
+      "tokens": 128,
+      "seconds": 2.739488960003655,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    },
+    {
+      "mode": "prefill",
+      "repeat": 4,
+      "tokens": 131072,
+      "seconds": 2.4100634770002216,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 4,
+      "tokens": 128,
+      "seconds": 2.7362720950040966,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    },
+    {
+      "mode": "prefill",
+      "repeat": 5,
+      "tokens": 131072,
+      "seconds": 2.410152256998117,
+      "allocated_mib": 1245.61962890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    {
+      "mode": "decode",
+      "repeat": 5,
+      "tokens": 128,
+      "seconds": 2.742773326994211,
+      "allocated_mib": 1246.74462890625,
+      "reserved_mib": 2854.0,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    }
+  ],
+  "prompt_sha256": "81c1446211da3f79f47b6a2515d77fae8f2d6005f86f8fff973e4eba2975344a",
+  "summary": {
+    "prefill": {
+      "samples": 6,
+      "mean_seconds": 2.4634227858320323,
+      "median_seconds": 2.432708503998583,
+      "sample_sd_seconds": 0.06980680564187841,
+      "tokens_per_second": 53207.26947637201,
+      "median_tokens_per_second": 53879.04049521765,
+      "min_seconds": 2.4100634770002216,
+      "max_seconds": 2.5838715529971523,
+      "peak_allocated_mib": 1934.52587890625,
+      "peak_reserved_mib": 2854.0,
+      "end_allocated_mib": 1245.61962890625,
+      "kv_mib": 1152.0,
+      "layer_cache_lengths": [
+        131072,
+        131072,
+        131072,
+        131072,
+        65536,
+        65536,
+        65536,
+        65536
+      ]
+    },
+    "decode": {
+      "samples": 6,
+      "mean_seconds": 2.769389516165878,
+      "median_seconds": 2.741131143498933,
+      "sample_sd_seconds": 0.05824962866249898,
+      "tokens_per_second": 46.219572672179204,
+      "median_tokens_per_second": 46.69605111874131,
+      "min_seconds": 2.734940946997085,
+      "max_seconds": 2.8833004379994236,
+      "peak_allocated_mib": 1679.19091796875,
+      "peak_reserved_mib": 2854.0,
+      "end_allocated_mib": 1246.74462890625,
+      "kv_mib": 1153.125,
+      "layer_cache_lengths": [
+        131200,
+        131200,
+        131200,
+        131200,
+        65600,
+        65600,
+        65600,
+        65600
+      ]
+    }
+  }
+}

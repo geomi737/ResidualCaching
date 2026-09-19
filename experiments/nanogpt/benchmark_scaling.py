@@ -32,7 +32,7 @@ def parse_args():
     p.add_argument('--train-warmup', type=int, default=5)
     p.add_argument('--generation-tokens', type=int, default=32)
     p.add_argument('--generation-repeats', type=int, default=5)
-    p.add_argument('--output', type=Path, default=Path('results/scaling_cuda.json'))
+    p.add_argument('--output', type=Path, default=Path('results/legacy/nanogpt/scaling_cuda.json'))
     a = p.parse_args()
     if not a.device.startswith('cuda') or not torch.cuda.is_available():
         p.error('This microbenchmark requires CUDA')

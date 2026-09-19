@@ -36,43 +36,62 @@ mechanism: early layers retain all token K/V, while deep layers persist only
 completed windows. Singleton tails participate in prediction without persisting
 in the deep cache.
 
-The author selected **Sliding + R** as the next direction based on its best
-compressed boundary accuracy among the four merged variants. Conventional
-merging remains a recorded control, not the default direction for new training.
+The active priorities are **Sliding** and **Sliding + R**, trained from scratch
+and compared against baseline. Sliding + R had the best compressed boundary
+accuracy among the four merged variants in this pilot; Sliding had the better
+final-prefix loss. Conventional disjoint merging and its residual variant are
+**legacy**: their results remain available for historical comparison.
 Accuracy here means top-1 next-token accuracy on specified targets, not a
 complete measure of language quality or reasoning.
 
-## Latest GPU pilot
+## Latest results
 
-Five variants, one seed, identical random base weights and input batches,
-1,500 updates each, WikiText-2, RTX 4060. Inference context: 256 tokens.
+Nine fresh GPU trainings: Baseline, Sliding, and Sliding + R for seeds 17/29/43,
+1500 updates each on WikiText-2. Mean ± sample standard deviation:
 
-| Variant | Test boundary CE ↓ | Boundary accuracy ↑ | Cached decode tokens/s ↑ | Training allocated peak MiB ↓ |
-|---|---:|---:|---:|---:|
-| Baseline | 5.2743 | 24.71% | 137.65 | 1197.1 |
-| Conventional merge | 5.4673 | 22.99% | 175.96 | 828.6 |
-| Sliding | 5.3758 | 23.33% | 180.16 | 1197.3 |
-| Conventional merge + R | 5.4697 | 23.07% | 181.39 | 828.6 |
-| Sliding + R | **5.3573** | **23.71%** | 183.39 | 1197.3 |
+| Compressed inference quality | Baseline | Sliding | Sliding + R |
+|---|---:|---:|---:|
+| Boundary accuracy | **24.74 ± 0.12%** | 23.07 ± 0.05% | 23.40 ± 0.30% |
+| Boundary cross-entropy ↓ | **5.256 ± 0.010** | 5.402 ± 0.008 | 5.375 ± 0.020 |
+| Final-prefix cross-entropy ↓ | **5.224 ± 0.031** | 5.413 ± 0.056 | 5.542 ± 0.053 |
 
-Sliding + R has **1.57% higher boundary loss**, **0.99 percentage points lower
-boundary accuracy**, and **33.22% higher measured cached decode throughput**
-than baseline. Its persistent KV bytes are **25% lower**. Sliding keeps dense
-training positions, so its training allocated peak is effectively unchanged.
-Conventional merging reduces training allocated peak by **30.79%**, but supplies
-**49.90% fewer supervised predictions** at the same input budget.
+Sliding + R improves compressed boundary accuracy over Sliding in all three
+seeds, averaging **+0.34 percentage points**, but has worse final-prefix loss in
+all three seeds. Both remain active priorities; baseline retains better quality.
+Dense sliding training keeps the number of positions and does not save training
+allocated memory. Conventional merging training is **legacy**.
 
-Sliding without R has the better merged final-prefix loss. All merged variants
-have the same inference structure; their small timing differences are not
-established architecture effects. These are short measurements from one seed,
-not a universal winner or a statistically established speedup.
+![Three-seed quality and training overview](results/training/three_seeds/figures/overview.png)
 
-![Five-variant GPU overview](results/sliding_scratch/figures/overview.png)
+Repeated checkpoint-only timing finds no speed advantage at 256/1024 tokens.
+Prefill improves by 2048 tokens. A substantial decode improvement appears at
+64K. Long-context quality has not been evaluated.
 
-[Full protocol and analysis](docs/sliding-merging-experiment.md) ·
-[Every percentage metric](results/sliding_scratch/percentage_analysis.md) ·
-[Exact raw measurements](results/sliding_scratch/seed11.json) ·
-[Artifact provenance](results/sliding_scratch/provenance.json)
+**128K speed and memory measured together**, seed 17, six warmed repeats,
+RTX 4060, batch one, FP32 weights/BF16 autocast/SDPA, one model per fresh process:
+
+| Metric | Baseline | Sliding | Sliding + R |
+|---|---:|---:|---:|
+| Prefill time ↓ | 3.981 s | 2.463 s | 2.417 s |
+| Prefill throughput difference | reference | **+61.62%** | **+64.70%** |
+| Decode tokens/s ↑ | 33.85 | 46.22 | 46.81 |
+| Decode throughput difference | reference | **+36.54%** | **+38.29%** |
+| Prefill allocated peak, MiB ↓ | 2702.5 | **1934.5 (−28.42%)** | **1934.5 (−28.42%)** |
+| Decode allocated peak, MiB ↓ | 1727.2 | **1679.2 (−2.78%)** | **1679.2 (−2.78%)** |
+| Persistent KV, MiB ↓ | 1537.5 | **1153.1 (−25%)** | **1153.1 (−25%)** |
+
+Memory is PyTorch allocator memory, excluding CUDA context, driver and other
+applications. KV savings do not imply equal whole-model peak savings. Long-context
+benchmarks use a 22M-parameter model trained on 255/256-token sequences; they
+measure performance, not usable long-context quality. Speed results depend on
+this implementation and hardware. Shared-residency sweep timings and isolated
+memory/speed timings are separate experiments.
+
+![Repeated context speed sweep](results/speed/figures/context_sweep.png)
+
+[Training report](docs/reports/training.md) · [Speed report](docs/reports/speed.md) ·
+[Memory report](docs/reports/memory.md) · [Raw results and checksums](results/README.md) ·
+[Original five-variant pilot](docs/sliding-merging-experiment.md)
 
 ## Run the current experiment
 
@@ -107,6 +126,7 @@ results contain measurements, not corpus text or checkpoints.
 ```bash
 python -m unittest discover -s tests -v
 python experiments/reporting/export_sliding_analysis.py
+python experiments/reporting/plot_published_benchmarks.py
 MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_sliding_results.py
 ```
 
@@ -118,7 +138,11 @@ MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_sliding_
 | `experiments/smollm/legacy/` | Earlier tiny, pretrained adaptation, and unmerge experiments |
 | `experiments/nanogpt/` | Historical nanoGPT benchmarks and numerical witnesses |
 | `experiments/reporting/` | Evidence-derived reports and reproducible plotting |
-| `results/sliding_scratch/` | Latest raw results, percentages, source metadata, PNG/SVG figures |
+| `results/training/` | Three-seed quality/training and original pilot evidence |
+| `results/speed/` | Repeated speed measurements from 256 to 128K |
+| `results/memory/` | Isolated joint memory/speed measurements |
+| `results/legacy/` | Earlier nanoGPT and pretrained SmolLM evidence |
+| `docs/reports/` | English training, speed, and memory interpretation |
 | `docs/` | Current protocol, architecture, validation, and historical experiment reports |
 | `docs/archive/` | Previous proposals retained for research provenance |
 | `archive/prototypes/` | Non-causal or leaking exploratory prototypes; not quality evidence |

@@ -24,7 +24,7 @@ Values are **mean ± sample standard deviation across three seeds**. Training th
 | Merged, no residual | 125.1 ± 4.1 | 68.7 ± 1.3 | 1452.7 ± 0.2 | 5.601 ± 0.034 | 21.14 ± 0.98 | 409.3 ± 5.0 |
 | Merged + residual sum | 123.8 ± 4.1 | 67.9 ± 0.7 | 1452.7 ± 0.2 | 5.533 ± 0.013 | 21.84 ± 0.46 | 408.9 ± 1.8 |
 
-![Primary results](../results/ablation_cuda.png)
+![Primary results](../results/legacy/nanogpt/ablation_cuda.png)
 
 Accuracy is **top-1 next-token accuracy**, not text fluency or an instruction-following benchmark. The primary test metric scores 2,048 fixed final-prefix predictions per run, evenly split between context lengths 128 and 127. These targets are identical across variants and seeds. The table does not describe every token of the entire test split, and repeated model seeds do not create independent test examples.
 
@@ -75,7 +75,7 @@ Independent-mode measurements below show the potential saving for completed-wind
 
 ## Context length and compression-depth study
 
-The [scaling report](../results/scaling_cuda.json) contains **69 warmed microbenchmark cases**: three seeds, contexts 128/512/1024, compression before blocks 0/2/4, two compressed variants, a baseline, and isolated singleton-only training controls.
+The [scaling report](../results/legacy/nanogpt/scaling_cuda.json) contains **69 warmed microbenchmark cases**: three seeds, contexts 128/512/1024, compression before blocks 0/2/4, two compressed variants, a baseline, and isolated singleton-only training controls.
 
 These models are freshly initialized and receive random token IDs. Each case performs five training warmup steps and twenty timed updates. These results establish tensor-shape performance and memory costs, **not** long-context quality of the trained 128-token models. The models have positional capacity 1,024, so their parameter memory is slightly larger than in the primary experiment.
 
@@ -95,7 +95,7 @@ The following rows average the three shape-study seeds, with compression after t
 | 1024 | Merged, no residual | 130.8 | 834.5 | 508.8 | 406.2 | 84.69 |
 | 1024 | Merged + residual sum | 130.5 | 834.5 | 505.3 | 410.5 | 84.69 |
 
-![Context scaling](../results/scaling_cuda.png)
+![Context scaling](../results/legacy/nanogpt/scaling_cuda.png)
 
 Pure compressed batches need about **834.5 MiB vs 1454.5 MiB** for the baseline at this input budget, approximately **42.6% less allocated peak memory**. Singleton-only controls return to approximately **1454.5 MiB**. Residual and no-residual compression have effectively identical memory peaks in these cases.
 
@@ -124,13 +124,13 @@ SDPA selects an implementation according to its inputs and environment; we did n
 ```bash
 python -m pip install -r requirements-experiments.txt
 python nanoGPT/data/shakespeare_threeway/prepare.py
-OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python nanoGPT/bench_ablation.py --device=cuda --max-iters=1000 --seeds 1337 2027 3407 --prefix-iters=128 --test-iters=64 --output=results/ablation_cuda.json
-OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/scaling_cuda.json
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python nanoGPT/bench_ablation.py --device=cuda --max-iters=1000 --seeds 1337 2027 3407 --prefix-iters=128 --test-iters=64 --output=results/legacy/nanogpt/ablation_cuda.json
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/legacy/nanogpt/scaling_cuda.json
 python experiments/nanogpt/verify_properties.py
 python -m unittest discover -s tests -v
 MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_results.py
 python experiments/reporting/write_report.py
-OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/scaling_cuda.json
+OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 python experiments/nanogpt/benchmark_scaling.py --output=results/legacy/nanogpt/scaling_cuda.json
 python experiments/nanogpt/verify_properties.py
 
 MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_results.py

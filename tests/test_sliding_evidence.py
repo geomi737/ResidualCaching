@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 import unittest
 
-ROOT = Path(__file__).resolve().parents[1] / 'results/sliding_scratch'
+ROOT = Path(__file__).resolve().parents[1] / 'results/training/seed11_pilot'
 
 
 class SlidingEvidenceTests(unittest.TestCase):

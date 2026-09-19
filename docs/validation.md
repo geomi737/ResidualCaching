@@ -39,8 +39,8 @@ current Llama cache, and multi-GPU training remain outside the verified scope.
 
 See the [full protocol](sliding-merging-experiment.md) and
 [result index](../results/README.md). Exact evidence is preserved in
-[seed11.json](../results/sliding_scratch/seed11.json), with checksums in
-[provenance.json](../results/sliding_scratch/provenance.json).
+[seed11.json](../results/training/seed11_pilot/seed11.json), with checksums in
+[provenance.json](../results/training/seed11_pilot/provenance.json).
 Five models were trained on actual WikiText-2 text from random initialization
 on RTX 4060, 1,500 updates each. Initial weights and data/input plans are paired.
 Test evaluates 65,536 common boundary targets and 512 final-prefix targets.
@@ -66,7 +66,7 @@ protocol does not describe the current scratch pilot. The
 [pretrained SmolLM2 page](smollm-next-experiment.md) records earlier feasibility
 and adaptation work, not new scratch quality.
 
-`results/smoke_cpu.json` and local synthetic GPU smoke runs verify execution
+`results/legacy/nanogpt/smoke_cpu.json` and local synthetic GPU smoke runs verify execution
 only. Random-input loss must not be interpreted as language quality.
 
 ## Limits
@@ -77,3 +77,10 @@ benchmark; cross-entropy and final-prefix behavior are reported alongside it.
 Evaluation windows can overlap. The post-test choice of Sliding + R is an
 exploratory research direction to confirm on fresh targets. No lossless
 compression, universal quality win, or production-readiness claim is made.
+
+## Publication integrity
+
+The reorganized evidence passed 26 existing CPU/GPU checks and four additional
+publication checks: SHA-256 integrity, three paired fresh training seeds, matching
+prompts and timing-repeat counts, and isolated 128K KV lengths/peak-memory semantics.
+All repository/report Markdown links were checked after the moves.

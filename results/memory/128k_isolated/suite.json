@@ -1,0 +1,18 @@
+{
+  "state": "complete",
+  "completed": 3,
+  "config": {
+    "variant": null,
+    "checkpoints": "out-sliding-three-seeds",
+    "output": "out-sliding-resources-128k",
+    "seed": 17,
+    "length": 131072,
+    "repeats": 6,
+    "decode_tokens": 128
+  },
+  "runs": [
+    "baseline",
+    "sliding",
+    "sliding_residual"
+  ]
+}

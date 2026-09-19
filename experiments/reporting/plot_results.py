@@ -16,8 +16,8 @@ COLORS = ['#4b79a1', '#d69b43', '#528c6c']
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--ablation', type=Path, default=Path('results/ablation_cuda.json'))
-    parser.add_argument('--scaling', type=Path, default=Path('results/scaling_cuda.json'))
+    parser.add_argument('--ablation', type=Path, default=Path('results/legacy/nanogpt/ablation_cuda.json'))
+    parser.add_argument('--scaling', type=Path, default=Path('results/legacy/nanogpt/scaling_cuda.json'))
     args = parser.parse_args()
     report = json.loads(args.ablation.read_text())
     summary = report['summary']

@@ -33,7 +33,7 @@ stable performance benchmarks. Throughput excludes the first warmup update.
 Memory peaks include the warmup and optimizer-state initialization, but exclude
 other applications and CUDA allocations outside PyTorch's allocator. No adapted
 weights were saved. Random-input losses must not be interpreted as validation
-losses. Raw results are in `results/smollm135m_feasibility_*.json`.
+losses. Raw results are in `results/legacy/smollm/smollm135m_feasibility_*.json`.
 
 Reproduce from the repository root (reuse a working CUDA PyTorch installation):
 
@@ -41,8 +41,8 @@ Reproduce from the repository root (reuse a working CUDA PyTorch installation):
 python -m venv --system-site-packages .venv-smollm
 .venv-smollm/bin/python -m pip install -r requirements-smollm.txt
 hf download HuggingFaceTB/SmolLM2-135M --revision 93efa2f097d58c2a74874c7e644dbc9b0cee75a2 --local-dir models/SmolLM2-135M
-.venv-smollm/bin/python experiments/smollm/probe_smollm.py --length 512 --output results/smollm135m_feasibility_512.json
-.venv-smollm/bin/python experiments/smollm/probe_smollm.py --length 1024 --output results/smollm135m_feasibility_1024.json
+.venv-smollm/bin/python experiments/smollm/probe_smollm.py --length 512 --output results/legacy/smollm/smollm135m_feasibility_512.json
+.venv-smollm/bin/python experiments/smollm/probe_smollm.py --length 1024 --output results/legacy/smollm/smollm135m_feasibility_1024.json
 ```
 
 ## Historical proposed adaptation and evaluation

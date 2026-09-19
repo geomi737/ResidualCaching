@@ -22,3 +22,8 @@ out*/
 wandb/
 .env
 .env.*
+
+# Local experiment runs are never published.  Each experiment owns its own
+# results directory; publish reviewed, reproducible evidence under /results/.
+/experiments/*/results/
+/results/SRFCC*/

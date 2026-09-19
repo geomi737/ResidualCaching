@@ -1,5 +1,10 @@
 # Sliding training with compressed inference: scratch GPU pilot
 
+This is the historical seed-11 pilot. See the newer [training](reports/training.md),
+[speed](reports/speed.md), and [memory](reports/memory.md) reports. Short one-shot
+inference timings here do not establish a stable speedup.
+
+
 **Status:** completed pilot; one seed. **Date:** 2026-09-18.
 **Selected direction:** Sliding + residual, based on compressed boundary accuracy.
 The baseline remains better on the measured quality metrics. This selection is
@@ -14,7 +19,7 @@ points** of baseline and had **1.57% higher boundary CE**, with **33.22% higher
 measured cached decode throughput**. Sliding without R had better final-prefix
 CE. Repeated seeds and longer-context measurements remain necessary.
 
-![Overview](../results/sliding_scratch/figures/overview.png)
+![Overview](../results/training/seed11_pilot/figures/overview.png)
 
 ## Architecture and five variants
 
@@ -73,7 +78,7 @@ variant. Articles have EOS boundaries; sampled fragments can cross them.
 | Validation | 265,742 |
 | Test | 302,010 |
 
-See [original data metadata](../results/sliding_scratch/dataset_manifest.json)
+See [original data metadata](../results/training/seed11_pilot/dataset_manifest.json)
 and [source credits](../UPSTREAM.md). The metadata's adaptation note comes from
 an older workflow; it does not describe this scratch initialization.
 
@@ -123,7 +128,7 @@ merge here. One seed cannot establish significance of these small differences.
 
 ## Speed and memory
 
-![Learning curves](../results/sliding_scratch/figures/learning_curves.png)
+![Learning curves](../results/training/seed11_pilot/figures/learning_curves.png)
 
 | Variant | Training input tokens/s | Change | Training allocated peak MiB | Change | Cached decode tokens/s | Change |
 |---|---:|---:|---:|---:|---:|---:|
@@ -160,7 +165,7 @@ as live memory. All raw reserved/allocated cases are in the percentage report.
 
 ## Overlapping-history mismatch
 
-![Representation-mode diagnostics](../results/sliding_scratch/figures/representation_modes.png)
+![Representation-mode diagnostics](../results/training/seed11_pilot/figures/representation_modes.png)
 
 Both representation modes are evaluated with dropout disabled. Matched boundary
 CE for Sliding rises **1.82%** when moving from sliding history to disjoint
@@ -191,7 +196,8 @@ python experiments/smollm/train_sliding.py --from-scratch --device cuda \
 python experiments/smollm/serve_smollm.py --output out-sliding-scratch-smollm --port 8767
 ```
 
-The runner now defaults to baseline and Sliding + R for new work. The explicit
+The runner now defaults to baseline, Sliding, and Sliding + R for new work.
+Conventional disjoint merging and Disjoint + R training are legacy. The explicit
 five-variant command reproduces the preserved comparison. It fails without
 CUDA rather than training on CPU. Atomic JSON progress updates every step; the
 English dashboard polls every two seconds. `comparison.md` is generated after
@@ -205,10 +211,10 @@ MPLCONFIGDIR=/tmp/residual-matplotlib python experiments/reporting/plot_sliding_
 python -m unittest discover -s tests -v
 ```
 
-[Every metric and relative percentage](../results/sliding_scratch/percentage_analysis.md) ·
-[Machine-readable derived metrics](../results/sliding_scratch/percentage_analysis.json) ·
-[Exact raw run JSON](../results/sliding_scratch/seed11.json) ·
-[Artifact checksums](../results/sliding_scratch/provenance.json)
+[Every metric and relative percentage](../results/training/seed11_pilot/percentage_analysis.md) ·
+[Machine-readable derived metrics](../results/training/seed11_pilot/percentage_analysis.json) ·
+[Exact raw run JSON](../results/training/seed11_pilot/seed11.json) ·
+[Artifact checksums](../results/training/seed11_pilot/provenance.json)
 
 ## Limitations and next work
 
@@ -220,9 +226,9 @@ retrieval, or generated-text preference benchmark is included. Selecting Sliding
 + R after inspecting this test is an exploratory research choice; confirm it on
 fresh held-out evaluation in future work.
 
-Next: repeat baseline and Sliding + R across seeds, measure longer-context
+Next: repeat baseline, Sliding, and Sliding + R across seeds, measure longer-context
 memory and cached decoding, and examine retention of distant facts. Compare
-Sliding without R when testing whether the residual sum contributes. Retain
+the two active sliding variants to test whether the residual sum contributes. Retain
 conventional merge results as controls without repeating them by default.
 
 ## Acknowledgments

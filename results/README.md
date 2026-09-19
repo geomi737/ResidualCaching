@@ -1,34 +1,29 @@
-# Result artifact index
+# Research results
 
-## Current scratch pilot
+Active variants: **Baseline, Sliding, Sliding + R**, trained from scratch.
+Conventional disjoint merging and Disjoint + R training are legacy.
 
-[`sliding_scratch/`](sliding_scratch/) contains the completed five-variant,
-one-seed WikiText-2 pilot on RTX 4060:
+| Category | Report | Evidence and scope |
+|---|---|---|
+| Training and quality | [Three-seed comparison](training/three_seeds/comparison.md) | Nine fresh GPU trainings, seeds 17/29/43, 1500 updates each; mean and sample SD |
+| Historical scratch pilot | [Seed-11 percentages](training/seed11_pilot/percentage_analysis.md) | Five variants, one seed; includes legacy merging controls and short one-shot inference timings |
+| Speed, short context | [256/1024](speed/short_context_3seeds/speed-benchmark.md) | Three seeds, nine rotated repeats, shared model residency |
+| Speed, context sweep | [2K–16K](speed/long_context_seed17/speed-benchmark.md) | Seed 17, six rotated repeats |
+| Speed, 64K | [64K](speed/64k_seed17/speed-benchmark.md) | Seed 17, six rotated repeats |
+| Speed, 128K | [128K shared residency](speed/128k_seed17/speed-benchmark.md) | Seed 17, six rotated repeats; separate from isolated memory test |
+| Memory and speed together | [128K isolated](memory/128k_isolated/comparison.md) | One model per fresh process; allocator peaks, exact KV bytes, and speed measured together |
+| Earlier research | [Legacy index](legacy/README.md) | nanoGPT shape/training and pretrained SmolLM feasibility artifacts |
 
-- [`seed11.json`](sliding_scratch/seed11.json): exact original combined JSON,
-  including all 7,500 update records, quality metrics, configs, hashes, and timings.
-- [`dataset_manifest.json`](sliding_scratch/dataset_manifest.json): original
-  split sizes and corpus/tokenizer revision/hash metadata.
-- [`provenance.json`](sliding_scratch/provenance.json): artifact checksums and
-  explanation of the manifest note inherited from the old adaptation workflow.
-- [`percentage_analysis.md`](sliding_scratch/percentage_analysis.md) and
-  [`percentage_analysis.json`](sliding_scratch/percentage_analysis.json): derived
-  English absolute and relative metrics. Raw numbers are not rewritten.
-- [`figures/`](sliding_scratch/figures/): overview, learning curves, and
-  representation-mode diagnostics, each in PNG and SVG.
+[Training interpretation](../docs/reports/training.md) ·
+[Speed interpretation](../docs/reports/speed.md) ·
+[Memory interpretation](../docs/reports/memory.md) ·
+[Reproduction protocol](../docs/sliding-multiseed-experiment.md)
 
-See the [protocol and interpretation](../docs/sliding-merging-experiment.md).
+Raw JSON accompanies every report. [checksums.json](checksums.json) preserves
+SHA-256 checksums of published JSON evidence, excluding itself. Input data,
+model downloads, checkpoints, local logs, and process IDs are not redistributed.
 
-## Earlier artifacts
-
-| Files | Meaning |
-|---|---|
-| `ablation_cuda.json`, `ablation_cuda.png` | Historical nanoGPT trained comparison, three seeds; retired protocol |
-| `scaling_cuda.json`, `scaling_cuda.png` | Random-input nanoGPT shape/memory benchmarks, not language-quality evidence |
-| `property_evidence.json` | Algebraic and runtime witnesses |
-| `smoke_cpu.json` | CPU workflow smoke, not convergence evidence |
-| `smollm135m_feasibility_*.json` | Pretrained 135M CUDA feasibility probes |
-| `smollm_cuda_cache_check.json` | Earlier adapter cached/full-prefix diagnostic |
-
-Corpora, model downloads, token binaries, and checkpoints remain in ignored
-local directories and are not redistributed with these measurements.
+Timing repeats within one seed are not independent training repetitions.
+Long-context tests measure performance, not language quality. Allocated and
+reserved memory are distinct and must not be added. Shared-residency speed and
+isolated memory measurements are kept separate.

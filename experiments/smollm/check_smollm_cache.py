@@ -43,5 +43,5 @@ for variant in ('baseline', 'plain', 'residual'):
                      'top1_agreements': sum(agreements)})
     del model, state, logits, full
     torch.cuda.empty_cache()
-Path('results/smollm_cuda_cache_check.json').write_text(json.dumps(rows, indent=2) + '\n')
+Path('results/legacy/smollm/smollm_cuda_cache_check.json').write_text(json.dumps(rows, indent=2) + '\n')
 print(json.dumps(rows, indent=2))

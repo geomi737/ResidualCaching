@@ -1,0 +1,28 @@
+{
+  "started_utc": "2026-09-18T19:49:53.258083+00:00",
+  "seeds": [
+    17,
+    29,
+    43
+  ],
+  "variants": [
+    "baseline",
+    "sliding",
+    "sliding_residual"
+  ],
+  "training": "random initialization, CUDA only",
+  "source_sha256": {
+    "experiments/smollm/train_sliding.py": "9ae7054f1b183249d9a8fae0b8aeff0e23d0bef3ec99f5bbdcb8666f63a8a736",
+    "experiments/smollm/sliding_model.py": "2c2359b7eed5f206561493fea6370e1a7067847810f1f6599f703b177d1cf7ff",
+    "experiments/smollm/smollm_model.py": "cc4a922c31495ce3099ce84f7a5640a84b60e476ad5497a50268974bbec3a74f",
+    "experiments/smollm/train_sliding_multiseed.py": "027b1f4eb569c413b1fef4f98643d894d57856f660eca5b9cd7c3bee6b0ad2b8",
+    "models/SmolLM2-135M/config.json": "1d556eab73b69c7f11f64c557a2f9c6f440bd4c6b89bb2584a6b498c92603843"
+  },
+  "pilot_seed11_included": false,
+  "evaluation": "same exploratory held-out set and fixed sampling as seed11 pilot",
+  "reporting_source_sha256": {
+    "experiments/reporting/finalize_sliding_multiseed.py": "d4377e84626e249c55c7e0385ad4fc850fd58014974f2a83c2c8ed20eb6b7ab2",
+    "experiments/reporting/plot_sliding_multiseed.py": "42dc883b60412cf474170f52e159e01c8b97150a42544f7257c099fd0e2d1eb2",
+    "experiments/smollm/train_sliding_multiseed.py": "e598a85b9802c7a729179355d4ee16ff4007d17c182150606aa9e9e706580477"
+  }
+}

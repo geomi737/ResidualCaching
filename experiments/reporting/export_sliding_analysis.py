@@ -64,7 +64,7 @@ def export(source, destination):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--input', type=Path, default=Path('results/sliding_scratch/seed11.json'))
-    parser.add_argument('--output', type=Path, default=Path('results/sliding_scratch/percentage_analysis.md'))
+    parser.add_argument('--input', type=Path, default=Path('results/training/seed11_pilot/seed11.json'))
+    parser.add_argument('--output', type=Path, default=Path('results/training/seed11_pilot/percentage_analysis.md'))
     args = parser.parse_args()
     export(args.input, args.output)

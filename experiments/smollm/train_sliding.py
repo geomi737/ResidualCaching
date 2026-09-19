@@ -292,7 +292,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--synthetic', action='store_true')
     parser.add_argument('--from-scratch', action='store_true', default=True)
-    parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=['baseline', 'sliding_residual'])
+    parser.add_argument('--variants', nargs='+', choices=VARIANTS, default=['baseline', 'sliding', 'sliding_residual'])
     parser.add_argument('--device', default='cuda')
     parser.add_argument('--model', default='models/SmolLM2-135M')
     parser.add_argument('--data', default='data/smollm')

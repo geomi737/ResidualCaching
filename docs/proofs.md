@@ -3,11 +3,11 @@
 This document separates properties that follow from the implemented equations from empirical hypotheses. Numerical witnesses are reproducible with:
 
 ```bash
-python experiments/nanogpt/verify_properties.py --output=results/property_evidence.json
-python experiments/nanogpt/verify_properties.py --output=results/property_evidence.json
+python experiments/nanogpt/verify_properties.py --output=results/legacy/nanogpt/property_evidence.json
+python experiments/nanogpt/verify_properties.py --output=results/legacy/nanogpt/property_evidence.json
 ```
 
-The [recorded evidence](../results/property_evidence.json) uses float64 for the algebraic examples and a small CPU model for runtime tracing. The regression suite also checks GPU causality and backward in float32 and BF16.
+The [recorded evidence](../results/legacy/nanogpt/property_evidence.json) uses float64 for the algebraic examples and a small CPU model for runtime tracing. The regression suite also checks GPU causality and backward in float32 and BF16.
 
 ## 1. The residual aggregate cannot recover arbitrary individual vectors
 

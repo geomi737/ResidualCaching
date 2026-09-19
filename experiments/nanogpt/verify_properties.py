@@ -87,7 +87,7 @@ def collect_evidence():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output', type=Path, default=Path('results/property_evidence.json'))
+    parser.add_argument('--output', type=Path, default=Path('results/legacy/nanogpt/property_evidence.json'))
     args = parser.parse_args()
     report = collect_evidence()
     args.output.parent.mkdir(parents=True, exist_ok=True)
